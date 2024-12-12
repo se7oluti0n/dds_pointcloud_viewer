@@ -1,0 +1,15 @@
+// pointcloud.idl
+module PointCloudData {
+    struct Point {
+        float x;
+        float y;
+        float z;
+        float intensity;  // optional
+    };
+
+    struct PointCloud {
+        unsigned long timestamp;
+        sequence<Point> points;
+        string frame_id;
+    };
+};
