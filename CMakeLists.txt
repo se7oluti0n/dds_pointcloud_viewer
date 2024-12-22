@@ -35,5 +35,15 @@ ament_auto_add_executable(dds_example
 # Both executables need to be linked to the idl data type library and
 # the ddsc API library.
 target_link_libraries(dds_example ExampleData_lib CycloneDDS-CXX::ddscxx)
+
+## client exaple
+ament_auto_add_executable(client_example 
+  src/client_node.cpp
+  src/ClientExample.cpp
+)
+
+# Both executables need to be linked to the idl data type library and
+# the ddsc API library.
+target_link_libraries(client_example ExampleData_lib CycloneDDS-CXX::ddscxx)
 ament_auto_package()
 
