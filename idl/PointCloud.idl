@@ -1,15 +1,30 @@
 // pointcloud.idl
 module PointCloudData {
+    struct PointField {
+        string name;
+        unsigned long offset;
+        unsigned long datatype;
+        unsigned long count;
+    };
+
+    struct PointCloud2 {
+        double timestamp; // time in seconds
+        string frame_id;
+        unsigned long height;
+        unsigned long width;
+        sequence<PointField> fields;
+        boolean is_bigendian;
+        unsigned long point_step;
+        unsigned long row_step;
+ //       sequence<unsigned char> data;
+        sequence<uint8> data;
+        boolean is_dense;
+    };
+
     struct Point {
         float x;
         float y;
         float z;
         float intensity;  // optional
-    };
-
-    struct PointCloud {
-        unsigned long timestamp;
-        sequence<Point> points;
-        string frame_id;
     };
 };
