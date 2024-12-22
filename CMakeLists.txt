@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Find the CycloneDDS package.
 find_package(CycloneDDS-CXX REQUIRED)
+find_package(iceoryx_binding_c REQUIRED) 
 
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -26,7 +27,7 @@ include_directories(${CMAKE_BINARY_DIR})
 message("include dir: ${CMAKE_BINARY_DIR}")
 
 ### glim_ros ###
-ament_auto_add_library(dds_example SHARED
+ament_auto_add_executable(dds_example 
   src/main.cpp
   src/Example.cpp
 )
