@@ -5,6 +5,17 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <rclcpp/rclcpp.hpp>
+
+class PointCloudListener : public dds::sub::NoOpDataReaderListener<PointCloudData::PointCloud2> {
+public:
+  PointCloudListener(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud2_pub)
+      : pointcloud2_pub_(pointcloud2_pub) {}
+  void on_data_available(dds::sub::DataReader<PointCloudData::PointCloud2> &reader) override;
+
+private:
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud2_pub_;
+};
+
 class DDSSubscriberExample {
 
 public:
@@ -13,6 +24,8 @@ public:
   void create_client();
 
 private:
+  std::shared_ptr<dds::domain::DomainParticipant> participant_;
+  std::shared_ptr<dds::topic::Topic<PointCloudData::PointCloud2>> topic_;
   /* A reader also needs a subscriber. */
   std::shared_ptr<dds::sub::Subscriber> subscriber_;
 
@@ -22,6 +35,8 @@ private:
   rclcpp::Node::SharedPtr node_;
   
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud2_pub_;
+
+  std::shared_ptr<PointCloudListener> listener_;
   
   
 };

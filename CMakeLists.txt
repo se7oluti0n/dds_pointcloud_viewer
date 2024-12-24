@@ -29,7 +29,7 @@ message("include dir: ${CMAKE_BINARY_DIR}")
 ### glim_ros ###
 ament_auto_add_executable(dds_example 
   src/main.cpp
-  src/Example.cpp
+  src/DDSPublisherExample.cpp
 )
 
 # Both executables need to be linked to the idl data type library and
