@@ -4,24 +4,21 @@
 #include <PointCloud.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
+#include <mutex>
 #include <rclcpp/rclcpp.hpp>
+#include <thread>
 
-class PointCloudListener : public dds::sub::NoOpDataReaderListener<PointCloudData::PointCloud2> {
-public:
-  PointCloudListener(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud2_pub)
-      : pointcloud2_pub_(pointcloud2_pub) {}
-  void on_data_available(dds::sub::DataReader<PointCloudData::PointCloud2> &reader) override;
-
-private:
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud2_pub_;
-};
+class PointCloudListener;
 
 class DDSSubscriberExample {
 
+friend class PointCloudListener;
 public:
   DDSSubscriberExample(rclcpp::Node::SharedPtr node);
+  ~DDSSubscriberExample();
 
   void create_client();
+  void receiving_loop();
 
 private:
   std::shared_ptr<dds::domain::DomainParticipant> participant_;
@@ -33,10 +30,13 @@ private:
   std::shared_ptr<dds::sub::DataReader<PointCloudData::PointCloud2>> reader_;
 
   rclcpp::Node::SharedPtr node_;
-  
+
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud2_pub_;
 
   std::shared_ptr<PointCloudListener> listener_;
-  
-  
+
+  std::mutex pointcloud2_mutex_;
+  std::deque<PointCloudData::PointCloud2> pointcloud2_queue_;
+  std::shared_ptr<std::thread> receiving_thread_;
+  bool running_{false};
 };

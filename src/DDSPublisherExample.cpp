@@ -81,6 +81,14 @@ DDSPublisherExample::DDSPublisherExample(rclcpp::Node::SharedPtr node)
                 std::placeholders::_1));
 
   create_publisher();
+  running_ = true;
+  sending_thread_ = std::make_shared<std::thread>(
+      &DDSPublisherExample::sending_loop, this);
+}
+
+DDSPublisherExample::~DDSPublisherExample() {
+  running_ = false;
+  sending_thread_->join();
 }
 
 void DDSPublisherExample::create_publisher() {
@@ -107,20 +115,36 @@ void DDSPublisherExample::create_publisher() {
   match_readers_and_writers(*writer_, dds::core::Duration::from_secs(10));
 }
 
-void DDSPublisherExample::ros2_pointcloud_callback(
-    const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
+void DDSPublisherExample::sending_loop()
+{
+  while(running_) {
 
-  if (writer_ == nullptr) {
-    return;
+    std::lock_guard<std::mutex> lock(pointcloud2_mutex_);
+    if (!pointcloud2_queue_.empty() && writer_) {
+      auto msg = pointcloud2_queue_.front();
+      pointcloud2_queue_.pop_front();
+
+
+      auto preTakeTime = dds_time();
+      PointCloudData::PointCloud2 cloud = from_ros2_pointcloud(msg);
+      writer_->write(cloud);
+      auto postTakeTime = dds_time();
+
+      auto difference = (postTakeTime - preTakeTime) / DDS_NSECS_IN_USEC;
+
+      std::cout << "=== [Publisher] Sent data: " << cloud.data().size()
+                << ", take : " << difference << std::endl;
+    }
+
+    usleep(10000);
   }
 
-  auto preTakeTime = dds_time();
-  PointCloudData::PointCloud2 cloud = from_ros2_pointcloud(msg);
-  writer_->write(cloud);
-  auto postTakeTime = dds_time();
+}
 
-  auto difference = (postTakeTime - preTakeTime) / DDS_NSECS_IN_USEC;
-
-  std::cout << "=== [Publisher] Sent data: " << cloud.data().size()
-            << ", take : " << difference << std::endl;
+void DDSPublisherExample::ros2_pointcloud_callback(
+    const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
+  std::cout << "=== [Publisher] Received data: " << msg->data.size() << std::endl;
+  std::lock_guard<std::mutex> lock(pointcloud2_mutex_);
+  
+  pointcloud2_queue_.push_back(msg);
 }

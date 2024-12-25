@@ -33,12 +33,84 @@ from_dds_pointcloud(const PointCloudData::PointCloud2 &cloud) {
   return msg;
 }
 
+class PointCloudListener
+    : public dds::sub::NoOpDataReaderListener<PointCloudData::PointCloud2> {
+public:
+  PointCloudListener(DDSSubscriberExample *parent) : parent_(parent) {}
+  void on_data_available(
+      dds::sub::DataReader<PointCloudData::PointCloud2> &reader) override {
+    /* Take all samples. */
+    try {
+
+      auto preTakeTime = dds_time();
+      dds::sub::LoanedSamples<PointCloudData::PointCloud2> samples =
+          reader.take();
+      std::lock_guard<std::mutex> lock(parent_->pointcloud2_mutex_);
+      for (dds::sub::LoanedSamples<PointCloudData::PointCloud2>::const_iterator
+               sample_it = samples.begin();
+           sample_it != samples.end(); sample_it++) {
+        if (sample_it->info().valid()) {
+          parent_->pointcloud2_queue_.push_back(sample_it->data());
+        }
+      }
+      auto postTakeTime = dds_time();
+
+      auto difference = (postTakeTime - preTakeTime) / DDS_NSECS_IN_USEC;
+
+      std::cout << "=== [Publisher] Sent data: "
+                << ", take : " << difference << std::endl;
+    } catch (const dds::core::TimeoutError &) {
+      std::cout << "# Timeout encountered.\n" << std::flush;
+      return;
+    } catch (const dds::core::Exception &e) {
+      std::cout << "# Error: \"" << e.what() << "\".\n" << std::flush;
+      return;
+    } catch (...) {
+      std::cout << "# Generic error.\n" << std::flush;
+      return;
+    }
+  }
+
+private:
+  DDSSubscriberExample *parent_;
+};
+
 DDSSubscriberExample::DDSSubscriberExample(rclcpp::Node::SharedPtr node)
     : node_(node) {
 
   pointcloud2_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "dds_pointcloud", 10);
   create_client();
+  running_ = true;
+  receiving_thread_ = std::make_shared<std::thread>(
+      &DDSSubscriberExample::receiving_loop, this);
+}
+
+DDSSubscriberExample::~DDSSubscriberExample() {
+  running_ = false;
+  receiving_thread_->join();
+}
+
+void DDSSubscriberExample::receiving_loop() {
+  while (running_) {
+    std::lock_guard<std::mutex> lock(pointcloud2_mutex_);
+    if (!pointcloud2_queue_.empty()) {
+      auto start_time = dds_time();
+      auto msg = pointcloud2_queue_.front();
+      pointcloud2_queue_.pop_front();
+
+      sensor_msgs::msg::PointCloud2 msg_ros2;
+      msg_ros2 = from_dds_pointcloud(msg);
+      pointcloud2_pub_->publish(msg_ros2);
+
+      auto end_time = dds_time();
+      std::cout << "=== [Subscriber] Received data: "
+                << ", take : " << (end_time - start_time) / DDS_NSECS_IN_USEC
+                << std::endl;
+    }
+
+    usleep(10000);
+  }
 }
 
 void DDSSubscriberExample::create_client() {
@@ -63,44 +135,9 @@ void DDSSubscriberExample::create_client() {
   // create listener
   std::cout << "=== [Subscriber] Create listener." << std::endl;
 
-  listener_ = std::make_shared<PointCloudListener>(pointcloud2_pub_);
+  listener_ = std::make_shared<PointCloudListener>(this);
   reader_ = std::make_shared<dds::sub::DataReader<PointCloudData::PointCloud2>>(
       *subscriber_, *topic_);
   reader_->listener(listener_.get(),
                     dds::core::status::StatusMask::data_available());
-}
-
-void PointCloudListener::on_data_available(
-    dds::sub::DataReader<PointCloudData::PointCloud2> &reader) {
-  /* Take all samples. */
-  try {
-
-    auto preTakeTime = dds_time();
-    dds::sub::LoanedSamples<PointCloudData::PointCloud2> samples =
-        reader.take();
-    for (dds::sub::LoanedSamples<PointCloudData::PointCloud2>::const_iterator
-             sample_it = samples.begin();
-         sample_it != samples.end(); sample_it++) {
-      if (sample_it->info().valid()) {
-        sensor_msgs::msg::PointCloud2 msg;
-        msg = from_dds_pointcloud(sample_it->data());
-        pointcloud2_pub_->publish(msg);
-      }
-    }
-    auto postTakeTime = dds_time();
-
-    auto difference = (postTakeTime - preTakeTime) / DDS_NSECS_IN_USEC;
-
-    std::cout << "=== [Publisher] Sent data: " << ", take : " << difference
-              << std::endl;
-  } catch (const dds::core::TimeoutError &) {
-    std::cout << "# Timeout encountered.\n" << std::flush;
-    return;
-  } catch (const dds::core::Exception &e) {
-    std::cout << "# Error: \"" << e.what() << "\".\n" << std::flush;
-    return;
-  } catch (...) {
-    std::cout << "# Generic error.\n" << std::flush;
-    return;
-  }
 }
