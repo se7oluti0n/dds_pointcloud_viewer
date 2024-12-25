@@ -16,10 +16,9 @@ ament_auto_find_build_dependencies()
 # the proper data types and compiles them into a library.
 set(GENERATED_DIR ${CMAKE_BINARY_DIR}/generated)
 
-idlcxx_generate(TARGET ExampleData_lib 
+idlcxx_generate(TARGET PointcloudDataLib 
 OUTPUT_DIR ${GENERATED_DIR}
 FILES 
-  "idl/HelloWorldData.idl" 
   "idl/PointCloud.idl"
 WARNINGS no-implicit-extensibility)
 
@@ -27,23 +26,23 @@ include_directories(${CMAKE_BINARY_DIR})
 message("include dir: ${CMAKE_BINARY_DIR}")
 
 ### glim_ros ###
-ament_auto_add_executable(dds_example 
-  src/main.cpp
+ament_auto_add_executable(publisher_node 
+  src/publisher_node.cpp
   src/DDSPublisherExample.cpp
 )
 
 # Both executables need to be linked to the idl data type library and
 # the ddsc API library.
-target_link_libraries(dds_example ExampleData_lib CycloneDDS-CXX::ddscxx)
+target_link_libraries(publisher_node PointcloudDataLib CycloneDDS-CXX::ddscxx)
 
 ## client exaple
-ament_auto_add_executable(client_example 
-  src/client_node.cpp
-  src/ClientExample.cpp
+ament_auto_add_executable(subscriber_node 
+  src/subscriber_node.cpp
+  src/DDSSubscriberExample.cpp
 )
 
 # Both executables need to be linked to the idl data type library and
 # the ddsc API library.
-target_link_libraries(client_example ExampleData_lib CycloneDDS-CXX::ddscxx)
+target_link_libraries(subscriber_node PointcloudDataLib CycloneDDS-CXX::ddscxx)
 ament_auto_package()
 

@@ -1,4 +1,4 @@
-#include "ClientExample.hpp"
+#include "DDSSubscriberExample.hpp"
 
 using dds::domain::DomainParticipant;
 using dds::topic::Topic;
