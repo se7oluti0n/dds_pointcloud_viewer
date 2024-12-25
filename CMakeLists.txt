@@ -4,8 +4,11 @@ project(dds_pointcloud_viewer VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Find the CycloneDDS package.
+find_package(CycloneDDS REQUIRED)
 find_package(CycloneDDS-CXX REQUIRED)
 find_package(iceoryx_binding_c REQUIRED) 
+#set(glim_DIR "/home/manh/glim_ws/install/glim/share/glim/cmake")
+find_package(glim REQUIRED)
 
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -44,5 +47,16 @@ ament_auto_add_executable(subscriber_node
 # Both executables need to be linked to the idl data type library and
 # the ddsc API library.
 target_link_libraries(subscriber_node PointcloudDataLib CycloneDDS-CXX::ddscxx)
-ament_auto_package()
 
+ament_auto_add_executable(viewer_node
+  src/viewer_node.cpp
+  src/remote_viewer.cpp
+  src/DDSSubscriberExample.cpp
+)
+
+# Both executables need to be linked to the idl data type library and
+# the ddsc API library.
+target_link_libraries(viewer_node PointcloudDataLib glim::glim CycloneDDS-CXX::ddscxx)
+
+# ament
+ament_auto_package()
