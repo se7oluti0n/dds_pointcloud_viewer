@@ -119,8 +119,8 @@ void DDSPublisherExample::sending_loop()
 {
   while(running_) {
 
-    std::lock_guard<std::mutex> lock(pointcloud2_mutex_);
     if (!pointcloud2_queue_.empty() && writer_) {
+      std::lock_guard<std::mutex> lock(pointcloud2_mutex_);
       auto msg = pointcloud2_queue_.front();
       pointcloud2_queue_.pop_front();
 

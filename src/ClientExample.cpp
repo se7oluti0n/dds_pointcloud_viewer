@@ -93,8 +93,8 @@ DDSSubscriberExample::~DDSSubscriberExample() {
 
 void DDSSubscriberExample::receiving_loop() {
   while (running_) {
-    std::lock_guard<std::mutex> lock(pointcloud2_mutex_);
     if (!pointcloud2_queue_.empty()) {
+      std::lock_guard<std::mutex> lock(pointcloud2_mutex_);
       auto start_time = dds_time();
       auto msg = pointcloud2_queue_.front();
       pointcloud2_queue_.pop_front();
