@@ -1,5 +1,7 @@
 #include "remote_viewer.hpp"
 
+#include "callbacks.hpp"
+
 #include <glim/util/config.hpp>
 #include <glim/util/logging.hpp>
 
@@ -37,6 +39,18 @@ void RemoteViewer::invoke(const std::function<void()>& task) {
   invoke_queue.push_back(task);
 }
 
+void RemoteViewer::set_callbacks(){
+
+
+}
+
+
+bool RemoteViewer::drawable_filter(const std::string& name){
+  return true;
+}
+
+void RemoteViewer::drawable_selection(){
+}
 
 void RemoteViewer::viewer_loop() {
   glim::Config config(glim::GlobalConfig::get_config_path("config_viewer"));
@@ -50,10 +64,10 @@ void RemoteViewer::viewer_loop() {
     viewer->shader_setting().add("dynamic_object", 1);
   }
 
-  auto submap_viewer = viewer->sub_viewer("submap");
-  submap_viewer->set_pos(Eigen::Vector2i(100, 800));
-  submap_viewer->set_draw_xy_grid(false);
-  submap_viewer->use_topdown_camera_control(80.0);
+  //auto submap_viewer = viewer->sub_viewer("submap");
+  //submap_viewer->set_pos(Eigen::Vector2i(100, 800));
+  //submap_viewer->set_draw_xy_grid(false);
+  //submap_viewer->use_topdown_camera_control(80.0);
 
   viewer->register_drawable_filter("selection", [this](const std::string& name) { return drawable_filter(name); });
   viewer->register_ui_callback("selection", [this] { drawable_selection(); });
