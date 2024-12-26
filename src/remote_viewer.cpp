@@ -1,6 +1,7 @@
 #include "remote_viewer.hpp"
 
 #include "callbacks.hpp"
+#include "pointcloud_converter.hpp"
 
 #include <glim/util/config.hpp>
 #include <glim/util/logging.hpp>
@@ -41,9 +42,7 @@ void RemoteViewer::invoke(const std::function<void()>& task) {
 
 void RemoteViewer::set_callbacks(){
 
-
 }
-
 
 bool RemoteViewer::drawable_filter(const std::string& name){
   return true;
@@ -68,6 +67,9 @@ void RemoteViewer::viewer_loop() {
   //submap_viewer->set_pos(Eigen::Vector2i(100, 800));
   //submap_viewer->set_draw_xy_grid(false);
   //submap_viewer->use_topdown_camera_control(80.0);
+
+  
+  
 
   viewer->register_drawable_filter("selection", [this](const std::string& name) { return drawable_filter(name); });
   viewer->register_ui_callback("selection", [this] { drawable_selection(); });

@@ -6,13 +6,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Find the CycloneDDS package.
 find_package(CycloneDDS REQUIRED)
 find_package(CycloneDDS-CXX REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(iceoryx_binding_c REQUIRED) 
 #set(glim_DIR "/home/manh/glim_ws/install/glim/share/glim/cmake")
-find_package(glim REQUIRED)
 
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
+find_package(glim REQUIRED)
 # This is a convenience function, provided by the CycloneDDS package,
 # that will supply a library target related the the given idl file.
 # In short, it takes the idl file, generates the source files with
@@ -25,7 +26,7 @@ FILES
   "idl/PointCloud.idl"
 WARNINGS no-implicit-extensibility)
 
-include_directories(${CMAKE_BINARY_DIR})
+include_directories(./include ${CMAKE_BINARY_DIR})
 message("include dir: ${CMAKE_BINARY_DIR}")
 
 ### glim_ros ###
@@ -46,7 +47,7 @@ ament_auto_add_executable(subscriber_node
 
 # Both executables need to be linked to the idl data type library and
 # the ddsc API library.
-target_link_libraries(subscriber_node PointcloudDataLib CycloneDDS-CXX::ddscxx)
+target_link_libraries(subscriber_node PointcloudDataLib glim::glim CycloneDDS-CXX::ddscxx)
 
 ament_auto_add_executable(viewer_node
   src/viewer_node.cpp
