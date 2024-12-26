@@ -23,6 +23,13 @@ using PointCloud2 = PointCloudData::PointCloud2;
 using PointCloud2Ptr = std::shared_ptr<PointCloud2>;
 using PointCloud2ConstPtr = const std::shared_ptr<PointCloud2>; 
 using PointField = PointCloudData::PointField;
+
+
+template <typename T>
+Eigen::Vector4d get_vec4(const void* x, const void* y, const void* z) {
+  return Eigen::Vector4d(*reinterpret_cast<const T*>(x), *reinterpret_cast<const T*>(y), *reinterpret_cast<const T*>(z), 1.0);
+}
+
 static PointCloud2ConstPtr frame_to_pointcloud2(const std::string& frame_id, const double stamp, const gtsam_points::PointCloud& frame) {
   PointCloud2Ptr msg(new PointCloud2);
   
@@ -203,7 +210,7 @@ static RawPoints::Ptr extract_raw_points(const PointCloud2& points_msg, const st
     }
   }
 
-  raw_points->stamp = to_sec(points_msg.header.stamp);
+  raw_points->stamp = points_msg.timestamp();
   return raw_points;
 }
 }
