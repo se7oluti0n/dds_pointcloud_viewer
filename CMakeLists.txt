@@ -42,6 +42,7 @@ target_link_libraries(publisher_node PointcloudDataLib CycloneDDS-CXX::ddscxx)
 ## client exaple
 ament_auto_add_executable(subscriber_node 
   src/subscriber_node.cpp
+  src/callbacks.cpp
   src/DDSSubscriberExample.cpp
 )
 

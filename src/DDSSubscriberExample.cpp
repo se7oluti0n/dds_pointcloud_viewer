@@ -1,5 +1,8 @@
 #include "DDSSubscriberExample.hpp"
 
+#include "callbacks.hpp"
+#include "pointcloud_converter.hpp"
+
 using dds::domain::DomainParticipant;
 using dds::topic::Topic;
 
@@ -102,6 +105,11 @@ void DDSSubscriberExample::receiving_loop() {
       sensor_msgs::msg::PointCloud2 msg_ros2;
       msg_ros2 = from_dds_pointcloud(msg);
       pointcloud2_pub_->publish(msg_ros2);
+
+      // emit gtsam pointcloud 
+      auto gtsam_pointcloud = glim::extract_raw_points(msg);
+      glim::DDSCallbacks::on_raw_pointcloud(gtsam_pointcloud); // emit raw(gtsam_pointcloud);
+
 
       auto end_time = dds_time();
       std::cout << "=== [Subscriber] Received data: "

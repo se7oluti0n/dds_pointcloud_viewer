@@ -40,4 +40,5 @@ private:
 
   Eigen::Vector2f z_range;
   Eigen::Vector2f auto_z_range;
+  int current_color_mode;
 };
