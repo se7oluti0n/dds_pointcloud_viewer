@@ -92,23 +92,17 @@ DDSPublisherExample::~DDSPublisherExample() {
 }
 
 void DDSPublisherExample::create_publisher() {
-  // Create participant
-  participant_ =
-      std::make_shared<dds::domain::DomainParticipant>(domain::default_id());
-  // Create topic
   dds::topic::qos::TopicQos tqos;
   tqos << dds::core::policy::Reliability::Reliable(
       dds::core::Duration::from_secs(10));
-  topic_ = std::make_shared<dds::topic::Topic<PointCloudData::PointCloud2>>(
-      *participant_, "ManhTopic");
-
   dds::pub::qos::PublisherQos pqos;
   pqos << dds::core::policy::Partition("pong");
-  //  Create publisher and writer
-  publisher_ = std::make_shared<dds::pub::Publisher>(*participant_, pqos);
+  
+  dds_publisher_ = std::make_unique<DDSPublisher<PointCloudData::PointCloud2>>( 
+    domain::default_id(), "ManhTopic", tqos, pqos);
 
-  writer_ = std::make_shared<dds::pub::DataWriter<PointCloudData::PointCloud2>>(
-      *publisher_, *topic_);
+  writer_ = dds_publisher_->get_writer();
+
   std::cout << "=== [Publisher] Waiting for sample to be accepted."
             << std::endl;
 
@@ -132,8 +126,8 @@ void DDSPublisherExample::sending_loop()
 
       auto difference = (postTakeTime - preTakeTime) / DDS_NSECS_IN_USEC;
 
-      std::cout << "=== [Publisher] Sent data: " << cloud.data().size()
-                << ", take : " << difference << std::endl;
+      // std::cout << "=== [Publisher] Sent data: " << cloud.data().size()
+      //           << ", take : " << difference << std::endl;
     }
 
     usleep(10000);
@@ -143,7 +137,7 @@ void DDSPublisherExample::sending_loop()
 
 void DDSPublisherExample::ros2_pointcloud_callback(
     const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
-  std::cout << "=== [Publisher] Received data: " << msg->data.size() << std::endl;
+  // std::cout << "=== [Publisher] Received data: " << msg->data.size() << std::endl;
   std::lock_guard<std::mutex> lock(pointcloud2_mutex_);
   
   pointcloud2_queue_.push_back(msg);

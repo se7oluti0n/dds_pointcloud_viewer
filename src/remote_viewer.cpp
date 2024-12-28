@@ -18,7 +18,24 @@
 
 RemoteViewer::RemoteViewer() {
 
+  kill_switch = false;
+  request_to_terminate = false;
 
+  current_color_mode = 0;
+  z_range = Eigen::Vector2d(-2.0, 4.0).cast<float>();
+  auto_z_range << 0.0f, 0.0f;
+
+
+  // points_alpha = 1.0;
+  // factors_alpha = 1.0;
+  //
+  // point_size = 1.0;
+  // point_size_metric = false;
+  // point_shape_circle =  true;
+
+
+  enable_partial_rendering = false;
+  partial_rendering_budget = 1024;
   set_callbacks();
   thread = std::thread([this] { viewer_loop(); });
 }
@@ -30,7 +47,7 @@ RemoteViewer::~RemoteViewer() {
   }
 }
 
-bool RemoteViewer::ok() const { return !request_to_terminate; }
+// bool RemoteViewer::ok() const { return !request_to_terminate; }
 
 void RemoteViewer::invoke(const std::function<void()> &task) {
   if (kill_switch) {
@@ -48,24 +65,6 @@ void RemoteViewer::set_callbacks() {
           auto viewer = guik::LightViewer::instance();
           auto cloud_buffer = std::make_shared<glk::PointCloudBuffer>(
               gtsam_pointcloud->points);
-
-          // last_id = new_frame->id;
-          // last_num_points = new_frame->frame->size();
-          // if (new_frame->raw_frame && new_frame->raw_frame->size()) {
-          //   last_point_stamps.first = new_frame->raw_frame->times.front();
-          //   last_point_stamps.second = new_frame->raw_frame->times.back();
-          // }
-          // last_imu_vel = new_frame->v_world_imu;
-          // last_imu_bias = new_frame->imu_bias;
-          //
-          // trajectory->add_odom(new_frame->stamp, new_frame->T_world_sensor(),
-          //                      1);
-          // const Eigen::Isometry3f pose = resolve_pose(new_frame);
-          //
-          // if (track) {
-          //   viewer->lookat(pose.translation());
-          // }
-
           Eigen::Isometry3f pose = Eigen::Isometry3f::Identity();
           guik::ShaderSetting shader_setting =
               guik::FlatColor(1.0f, 0.5f, 0.0f, 1.0f, pose);
@@ -192,11 +191,13 @@ void RemoteViewer::drawable_selection() {
 }
 
 void RemoteViewer::viewer_loop() {
-  glim::Config config(glim::GlobalConfig::get_config_path("config_viewer"));
+  // glim::Config config(glim::GlobalConfig::get_config_path("config_viewer"));
 
-  auto viewer = guik::LightViewer::instance(
-      Eigen::Vector2i(config.param("standard_viewer", "viewer_width", 2560),
-                      config.param("standard_viewer", "viewer_height", 1440)));
+  // auto viewer = guik::LightViewer::instance(
+  //     Eigen::Vector2i(config.param("standard_viewer", "viewer_width", 2560),
+  //                     config.param("standard_viewer", "viewer_height", 1440)));
+
+  auto viewer = guik::LightViewer::instance(Eigen::Vector2i(640, 480));
   viewer->enable_vsync();
   viewer->shader_setting().add("z_range", z_range);
 
@@ -209,13 +210,13 @@ void RemoteViewer::viewer_loop() {
       "selection",
       [this](const std::string &name) { return drawable_filter(name); });
   viewer->register_ui_callback("selection", [this] { drawable_selection(); });
-  viewer->register_ui_callback(
-      "logging", guik::create_logger_ui(glim::get_ringbuffer_sink(), 0.5));
+  // viewer->register_ui_callback(
+  //     "logging", guik::create_logger_ui(glim::get_ringbuffer_sink(), 0.5));
 
   while (!kill_switch) {
-    // if (!viewer->spin_once()) {
-    //   request_to_terminate = true;
-    // }
+    if (!viewer->spin_once()) {
+      request_to_terminate = true;
+    }
 
     std::vector<std::function<void()>> tasks;
     {

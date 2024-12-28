@@ -10,12 +10,10 @@
 using namespace glim;
 using namespace std;
 
-class RemoteViewer : public glim::ExtensionModule {
+class RemoteViewer{
 public:
   RemoteViewer();
   ~RemoteViewer();
-
-  virtual bool ok() const override;
 
   void invoke(const std::function<void()> &task);
 

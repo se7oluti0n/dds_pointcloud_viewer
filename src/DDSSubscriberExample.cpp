@@ -60,8 +60,8 @@ public:
 
       auto difference = (postTakeTime - preTakeTime) / DDS_NSECS_IN_USEC;
 
-      std::cout << "=== [Publisher] Sent data: "
-                << ", take : " << difference << std::endl;
+      // std::cout << "=== [Publisher] Sent data: "
+      //           << ", take : " << difference << std::endl;
     } catch (const dds::core::TimeoutError &) {
       std::cout << "# Timeout encountered.\n" << std::flush;
       return;
@@ -112,9 +112,9 @@ void DDSSubscriberExample::receiving_loop() {
 
 
       auto end_time = dds_time();
-      std::cout << "=== [Subscriber] Received data: "
-                << ", take : " << (end_time - start_time) / DDS_NSECS_IN_USEC
-                << std::endl;
+      // std::cout << "=== [Subscriber] Received data: "
+      //           << ", take : " << (end_time - start_time) / DDS_NSECS_IN_USEC
+      //           << std::endl;
     }
 
     usleep(10000);
@@ -125,27 +125,19 @@ void DDSSubscriberExample::create_client() {
 
   std::cout << "=== [Subscriber] Create reader." << std::endl;
 
-  /* First, a domain participant is needed.
-   * Create one on the default domain. */
-  participant_ = std::make_shared<DomainParticipant>(
-      org::eclipse::cyclonedds::domain::default_id());
-  /* To subscribe to something, a topic is needed. */
   dds::topic::qos::TopicQos tqos;
   tqos << dds::core::policy::Reliability::Reliable(
       dds::core::Duration::from_secs(10));
-  topic_ = std::make_shared<dds::topic::Topic<PointCloudData::PointCloud2>>(
-      *participant_, "ManhTopic");
 
   dds::sub::qos::SubscriberQos sqos;
   sqos << dds::core::policy::Partition("pong");
-  subscriber_ = std::make_shared<dds::sub::Subscriber>(*participant_, sqos);
-
   // create listener
   std::cout << "=== [Subscriber] Create listener." << std::endl;
 
   listener_ = std::make_shared<PointCloudListener>(this);
-  reader_ = std::make_shared<dds::sub::DataReader<PointCloudData::PointCloud2>>(
-      *subscriber_, *topic_);
-  reader_->listener(listener_.get(),
-                    dds::core::status::StatusMask::data_available());
+
+  dds_subscriber_ = std::make_unique<DDSSubscriber<PointCloudData::PointCloud2>>(
+    org::eclipse::cyclonedds::domain::default_id(),                                                                           
+    "ManhTopic", listener_.get(), tqos, sqos);
+  reader_ = dds_subscriber_->get_reader();
 }
