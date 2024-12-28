@@ -1,5 +1,7 @@
 // pointcloud.idl
+#include "Pose3d.idl"
 module PointCloudData {
+
     struct PointField {
         string name;
         unsigned long offset;
@@ -26,5 +28,20 @@ module PointCloudData {
         float y;
         float z;
         float intensity;  // optional
+    };
+
+    struct Submap{
+      unsigned long submap_id;
+      Geometry::Pose3D submap_pose;
+    };
+    
+    struct SubmapData {
+      unsigned long submap_id;
+      Geometry::Pose3D pose;
+      PointCloud2 pointcloud;
+    };
+
+    struct SubmapList {
+      sequence<Submap> submap_list;
     };
 };

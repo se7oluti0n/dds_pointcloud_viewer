@@ -23,6 +23,7 @@ set(GENERATED_DIR ${CMAKE_BINARY_DIR}/generated)
 idlcxx_generate(TARGET PointcloudDataLib 
 OUTPUT_DIR ${GENERATED_DIR}
 FILES 
+  "idl/Pose3d.idl"
   "idl/PointCloud.idl"
 WARNINGS no-implicit-extensibility)
 
