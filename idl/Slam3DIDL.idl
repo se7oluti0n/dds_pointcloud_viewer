@@ -1,0 +1,26 @@
+
+#include "CommonIDL.idl"
+#include "PointcloudIDL.idl"
+
+module Slam3D {
+    struct Submap{
+      unsigned long submap_id;
+      Common::Pose3D submap_pose;
+    };
+    
+    struct SubmapData {
+      unsigned long submap_id;
+      Common::Pose3D pose;
+      PointCloudData::PointCloud2 pointcloud;
+    };
+
+    struct SubmapList {
+      sequence<Submap> submap_list;
+    };
+
+    struct Keyframe {
+      unsigned long keyframe_id;
+      Common::Pose3D pose;
+      PointCloudData::PointCloud2 pointcloud;
+    };
+};

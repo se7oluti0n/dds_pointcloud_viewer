@@ -3,7 +3,7 @@
 #include <Eigen/Core>
 #include <gtsam_points/types/point_cloud.hpp>
 #include <glim/util/raw_points.hpp>
-#include <PointCloud.hpp>
+#include <PointcloudIDL.hpp>
 
 
 enum PointFieldType {
@@ -32,12 +32,11 @@ Eigen::Vector4d get_vec4(const void* x, const void* y, const void* z) {
 
 static PointCloud2ConstPtr frame_to_pointcloud2(const std::string& frame_id, const double stamp, const gtsam_points::PointCloud& frame) {
   PointCloud2Ptr msg(new PointCloud2);
-  
-  //msg->header.frame_id = frame_id;
-  //msg->header.stamp = from_sec(stamp);
 
-  //msg->width = frame.size();
-  //msg->height = 1;
+  msg->width() = frame.size();
+  msg->height() = 1;
+  msg->frame_id() = frame_id;
+  msg->timestamp() = stamp;
 
   std::vector<std::string> field_names = {"x", "y", "z", "t"};
   int num_fields = frame.times ? 4 : 3;

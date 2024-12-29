@@ -2,7 +2,7 @@
 
 #include "dds/dds.hpp"
 #include "DDSSubscriber.hpp"
-#include <PointCloud.hpp>
+#include <PointcloudIDL.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <mutex>

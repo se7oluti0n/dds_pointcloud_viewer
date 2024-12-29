@@ -4,6 +4,7 @@
 
 template <typename T> class DDSPublisher {
 public:
+  using Ptr = std::shared_ptr<DDSPublisher<T>>;
   DDSPublisher(uint32_t domain_id, std::string topic_name, 
                const dds::topic::qos::TopicQos& tqos = dds::topic::qos::TopicQos(),
                const dds::pub::qos::PublisherQos& pqos = dds::pub::qos::PublisherQos() ,

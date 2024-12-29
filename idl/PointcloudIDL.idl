@@ -1,5 +1,4 @@
 // pointcloud.idl
-#include "Pose3d.idl"
 module PointCloudData {
 
     struct PointField {
@@ -18,7 +17,6 @@ module PointCloudData {
         boolean is_bigendian;
         unsigned long point_step;
         unsigned long row_step;
- //       sequence<unsigned char> data;
         sequence<uint8> data;
         boolean is_dense;
     };
@@ -30,18 +28,4 @@ module PointCloudData {
         float intensity;  // optional
     };
 
-    struct Submap{
-      unsigned long submap_id;
-      Geometry::Pose3D submap_pose;
-    };
-    
-    struct SubmapData {
-      unsigned long submap_id;
-      Geometry::Pose3D pose;
-      PointCloud2 pointcloud;
-    };
-
-    struct SubmapList {
-      sequence<Submap> submap_list;
-    };
 };

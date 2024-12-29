@@ -1,7 +1,6 @@
 #include "remote_viewer.hpp"
 
 #include "callbacks.hpp"
-#include "pointcloud_converter.hpp"
 
 #include <glim/util/config.hpp>
 #include <glim/util/logging.hpp>

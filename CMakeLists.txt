@@ -23,11 +23,12 @@ set(GENERATED_DIR ${CMAKE_BINARY_DIR}/generated)
 idlcxx_generate(TARGET PointcloudDataLib 
 OUTPUT_DIR ${GENERATED_DIR}
 FILES 
-  "idl/Pose3d.idl"
-  "idl/PointCloud.idl"
+  "idl/Slam3DIDL.idl"
+  "idl/PointcloudIDL.idl"
+  "idl/CommonIDL.idl"
 WARNINGS no-implicit-extensibility)
 
-include_directories(./include ${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/include)
 message("include dir: ${CMAKE_BINARY_DIR}")
 
 ### glim_ros ###
@@ -62,5 +63,12 @@ ament_auto_add_executable(viewer_node
 # the ddsc API library.
 target_link_libraries(viewer_node PointcloudDataLib glim::glim CycloneDDS-CXX::ddscxx)
 
+ament_auto_add_library(glim_dds_client SHARED
+  src/glim_dds_client.cpp
+)
+
+# Both executables need to be linked to the idl data type library and
+# the ddsc API library.
+target_link_libraries(glim_dds_client PointcloudDataLib glim::glim CycloneDDS-CXX::ddscxx)
 # ament
 ament_auto_package()
