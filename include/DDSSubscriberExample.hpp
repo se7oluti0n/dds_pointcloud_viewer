@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dds/dds.hpp"
 #include "DDSSubscriber.hpp"
+#include "DDSListener.hpp"
 #include <PointcloudIDL.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -9,7 +9,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <thread>
 
-class PointCloudListener;
 
 class DDSSubscriberExample {
 
@@ -22,12 +21,6 @@ public:
   void receiving_loop();
 
 private:
-  // std::shared_ptr<dds::domain::DomainParticipant> participant_;
-  // std::shared_ptr<dds::topic::Topic<PointCloudData::PointCloud2>> topic_;
-  /* A reader also needs a subscriber. */
-  // std::shared_ptr<dds::sub::Subscriber> subscriber_;
-
-  /* Now, the reader can be created to subscribe to a HelloWorld message. */
   std::unique_ptr<DDSSubscriber<PointCloudData::PointCloud2>> dds_subscriber_;
   std::shared_ptr<dds::sub::DataReader<PointCloudData::PointCloud2>> reader_;
 
@@ -35,10 +28,15 @@ private:
 
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud2_pub_;
 
-  std::shared_ptr<PointCloudListener> listener_;
+  std::shared_ptr<DDSListener<PointCloudData::PointCloud2>> listener_;
 
-  std::mutex pointcloud2_mutex_;
-  std::deque<PointCloudData::PointCloud2> pointcloud2_queue_;
+  // std::mutex pointcloud2_mutex_;
+  // std::deque<std::shared_ptr<PointCloudData::PointCloud2>> pointcloud2_queue_;
   std::shared_ptr<std::thread> receiving_thread_;
   bool running_{false};
+
+  // worker thread
+  void invoke(const std::function<void()> &task);
+  std::mutex invoke_queue_mutex;
+  std::vector<std::function<void()>> invoke_queue;
 };

@@ -36,48 +36,6 @@ from_dds_pointcloud(const PointCloudData::PointCloud2 &cloud) {
   return msg;
 }
 
-class PointCloudListener
-    : public dds::sub::NoOpDataReaderListener<PointCloudData::PointCloud2> {
-public:
-  PointCloudListener(DDSSubscriberExample *parent) : parent_(parent) {}
-  void on_data_available(
-      dds::sub::DataReader<PointCloudData::PointCloud2> &reader) override {
-    /* Take all samples. */
-    try {
-
-      auto preTakeTime = dds_time();
-      dds::sub::LoanedSamples<PointCloudData::PointCloud2> samples =
-          reader.take();
-      std::lock_guard<std::mutex> lock(parent_->pointcloud2_mutex_);
-      for (dds::sub::LoanedSamples<PointCloudData::PointCloud2>::const_iterator
-               sample_it = samples.begin();
-           sample_it != samples.end(); sample_it++) {
-        if (sample_it->info().valid()) {
-          parent_->pointcloud2_queue_.push_back(sample_it->data());
-        }
-      }
-      auto postTakeTime = dds_time();
-
-      auto difference = (postTakeTime - preTakeTime) / DDS_NSECS_IN_USEC;
-
-      // std::cout << "=== [Publisher] Sent data: "
-      //           << ", take : " << difference << std::endl;
-    } catch (const dds::core::TimeoutError &) {
-      std::cout << "# Timeout encountered.\n" << std::flush;
-      return;
-    } catch (const dds::core::Exception &e) {
-      std::cout << "# Error: \"" << e.what() << "\".\n" << std::flush;
-      return;
-    } catch (...) {
-      std::cout << "# Generic error.\n" << std::flush;
-      return;
-    }
-  }
-
-private:
-  DDSSubscriberExample *parent_;
-};
-
 DDSSubscriberExample::DDSSubscriberExample(rclcpp::Node::SharedPtr node)
     : node_(node) {
 
@@ -96,29 +54,25 @@ DDSSubscriberExample::~DDSSubscriberExample() {
 
 void DDSSubscriberExample::receiving_loop() {
   while (running_) {
-    if (!pointcloud2_queue_.empty()) {
-      std::lock_guard<std::mutex> lock(pointcloud2_mutex_);
-      auto start_time = dds_time();
-      auto msg = pointcloud2_queue_.front();
-      pointcloud2_queue_.pop_front();
-
-      sensor_msgs::msg::PointCloud2 msg_ros2;
-      msg_ros2 = from_dds_pointcloud(msg);
-      pointcloud2_pub_->publish(msg_ros2);
-
-      // emit gtsam pointcloud 
-      auto gtsam_pointcloud = glim::extract_raw_points(msg);
-      glim::DDSCallbacks::on_raw_pointcloud(gtsam_pointcloud); // emit raw(gtsam_pointcloud);
-
-
-      auto end_time = dds_time();
-      // std::cout << "=== [Subscriber] Received data: "
-      //           << ", take : " << (end_time - start_time) / DDS_NSECS_IN_USEC
-      //           << std::endl;
+    std::vector<std::function<void()>> tasks;
+    {
+      std::lock_guard<std::mutex> lock(invoke_queue_mutex);
+      tasks.swap(invoke_queue);
     }
 
+    for (const auto &task : tasks) {
+      task();
+    }
     usleep(10000);
   }
+}
+
+void DDSSubscriberExample::invoke(const std::function<void()> &task) {
+  if (!running_) {
+    return;
+  }
+  std::lock_guard<std::mutex> lock(invoke_queue_mutex);
+  invoke_queue.push_back(task);
 }
 
 void DDSSubscriberExample::create_client() {
@@ -134,7 +88,20 @@ void DDSSubscriberExample::create_client() {
   // create listener
   std::cout << "=== [Subscriber] Create listener." << std::endl;
 
-  listener_ = std::make_shared<PointCloudListener>(this);
+  listener_ = std::make_shared<DDSListener<PointCloudData::PointCloud2>>(
+      [this](const std::vector<std::shared_ptr<PointCloudData::PointCloud2>>&data) {
+      invoke([this, data]{
+        for (auto &msg : data) {
+          sensor_msgs::msg::PointCloud2 msg_ros2;
+          msg_ros2 = from_dds_pointcloud(*msg);
+          pointcloud2_pub_->publish(msg_ros2);
+
+          // emit gtsam pointcloud 
+          auto gtsam_pointcloud = glim::extract_raw_points(*msg);
+          glim::DDSCallbacks::on_raw_pointcloud(gtsam_pointcloud); // emit raw(gtsam_pointcloud);
+        }
+      });
+  });
 
   dds_subscriber_ = std::make_unique<DDSSubscriber<PointCloudData::PointCloud2>>(
     org::eclipse::cyclonedds::domain::default_id(),                                                                           
