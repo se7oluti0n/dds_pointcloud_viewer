@@ -30,4 +30,27 @@ Common::Pose3D from_eigen(const Eigen::Isometry3d &pose) {
   return res;
 }
 
+Eigen::Vector3d to_eigen(const Common::Vector3D &v) {
+  Eigen::Vector3d res;
+  res.x() = v.x();
+  res.y() = v.y();
+  res.z() = v.z();
+  return res;
+}
+
+Eigen::Quaterniond to_eigen(const Common::Quaternion &q) {
+  Eigen::Quaterniond res;
+  res.x() = q.x();
+  res.y() = q.y();
+  res.z() = q.z();
+  res.w() = q.w();
+  return res;
+}
+
+Eigen::Isometry3d to_eigen(const Common::Pose3D &pose) {
+  Eigen::Isometry3d res;
+  res.translation() = to_eigen(pose.translation());
+  res.linear() = to_eigen(pose.rotation()).toRotationMatrix();
+  return res;
+}
 } // namespace idl
