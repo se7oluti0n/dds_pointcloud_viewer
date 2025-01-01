@@ -7,13 +7,19 @@
 #include <mutex>
 #include <functional>
 #include <thread>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <glim/util/extension_module.hpp>
+namespace spdlog {
+class logger;
+}
 namespace glim {
 
 class GlimDDSClient: public ExtensionModule 
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   GlimDDSClient();
 
   virtual bool ok() const override;
@@ -34,6 +40,7 @@ private:
   DDSPublisher<Slam3D::SubmapList>::Ptr submap_list_publisher_;
   DDSPublisher<Slam3D::Keyframe>::Ptr keyframe_publisher_;
   DDSPublisher<Slam3D::SubmapData>::Ptr submap_data_publisher_;
+  std::shared_ptr<spdlog::logger> logger_;
 
 };
 

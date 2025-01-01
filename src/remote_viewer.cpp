@@ -25,15 +25,6 @@ RemoteViewer::RemoteViewer() {
   z_range = Eigen::Vector2d(-2.0, 4.0).cast<float>();
   auto_z_range << 0.0f, 0.0f;
 
-
-  // points_alpha = 1.0;
-  // factors_alpha = 1.0;
-  //
-  // point_size = 1.0;
-  // point_size_metric = false;
-  // point_shape_circle =  true;
-
-
   enable_partial_rendering = false;
   partial_rendering_budget = 1024;
   set_callbacks();
@@ -61,10 +52,11 @@ void RemoteViewer::set_callbacks() {
 
   glim::DDSCallbacks::on_raw_pointcloud.add(
       [this](glim::RawPoints::ConstPtr gtsam_pointcloud) {
+        std::cout << "Start handle raw pointcloud" << std::endl;
         invoke([this, gtsam_pointcloud] {
           auto viewer = guik::LightViewer::instance();
-          auto cloud_buffer = std::make_shared<glk::PointCloudBuffer>(
-              gtsam_pointcloud->points);
+          auto cloud_buffer =
+              std::make_shared<glk::PointCloudBuffer>(gtsam_pointcloud->points);
           Eigen::Isometry3f pose = Eigen::Isometry3f::Identity();
           guik::ShaderSetting shader_setting =
               guik::FlatColor(1.0f, 0.5f, 0.0f, 1.0f, pose);
@@ -96,62 +88,82 @@ void RemoteViewer::set_callbacks() {
         });
       });
 
-  glim::DDSCallbacks::on_submap_list.add([this](std::shared_ptr<const Slam3D::SubmapList> submaps){
-    if (submaps.size() == 0)
-      return;
+  glim::DDSCallbacks::on_submap_list.add(
+      [this](std::shared_ptr<const Slam3D::SubmapList> submaps) {
+        std::cout << "start handle submap list: " 
+                  << submaps->submap_list().size() << std::endl;
+        if (submaps->submap_list().size() == 0)
+          return;
 
-    invoke([this, submaps] {
-      std::vector<int> submap_ids(submaps->submap_list().size());
-      std::vector<Eigen::Isometry3f> submap_poses(submaps->submap_list().size());
-      for (int i = 0; i < submaps->submap_list().size(); i++) {
-        submap_ids[i] = submaps->submap_list()[i].submap_id();
-        submap_poses[i] = idl::to_eigen(submaps->submap_list()[i].submap_pose()).cast<float>();
-      }
 
-      auto viewer = guik::LightViewer::instance();
+        invoke([this, submaps] {
+          std::vector<int> submap_ids(submaps->submap_list().size());
+          std::vector<Eigen::Isometry3f> submap_poses(
+              submaps->submap_list().size());
+          for (int i = 0; i < submaps->submap_list().size(); i++) {
+            submap_ids[i] = submaps->submap_list()[i].submap_id();
+            submap_poses[i] =
+                idl::to_eigen(submaps->submap_list()[i].submap_pose())
+                    .cast<float>();
+          }
 
-      std::vector<Eigen::Vector3f> submap_positions(submap_ids.size());
+          auto viewer = guik::LightViewer::instance();
 
-      for (int i = 0; i < submap_poses.size(); i++) {
-        submap_positions[i] = submap_poses[i].translation();
+          std::vector<Eigen::Vector3f> submap_positions(submap_ids.size());
 
-        auto_z_range[0] = std::min<float>(auto_z_range[0], submap_poses[i].translation().z());
-        auto_z_range[1] = std::max<float>(auto_z_range[1], submap_poses[i].translation().z());
+          for (int i = 0; i < submap_poses.size(); i++) {
+            submap_positions[i] = submap_poses[i].translation();
 
-        auto drawable = viewer->find_drawable("submap_" + std::to_string(submap_ids[i]));
-        if (drawable.first) {
-          drawable.first->add("model_matrix", submap_poses[i].matrix());
-        }
-        viewer->update_drawable("submap_coord_" + std::to_string(submap_ids[i]), glk::Primitives::coordinate_system(), guik::VertexColor(submap_poses[i]));
-      }
+            auto_z_range[0] = std::min<float>(
+                auto_z_range[0], submap_poses[i].translation().z());
+            auto_z_range[1] = std::max<float>(
+                auto_z_range[1], submap_poses[i].translation().z());
 
-      viewer->shader_setting().add<Eigen::Vector2f>("z_range", auto_z_range + z_range);
-    });
-    
+            auto drawable = viewer->find_drawable(
+                "submap_" + std::to_string(submap_ids[i]));
+            if (drawable.first) {
+              drawable.first->add("model_matrix", submap_poses[i].matrix());
+            }
+            viewer->update_drawable("submap_coord_" +
+                                        std::to_string(submap_ids[i]),
+                                    glk::Primitives::coordinate_system(),
+                                    guik::VertexColor(submap_poses[i]));
+          }
 
-  });
+          viewer->shader_setting().add<Eigen::Vector2f>("z_range",
+                                                        auto_z_range + z_range);
+        });
+      });
 
-  glim::DDSCallbacks::on_submap_data.add([this](uint32_t submap_id, const Eigen::Isometry3f& submap_pose, glim::RawPoints::ConstPtr submap_points){
-    
-      // const double stamp_endpoint_R = submap->odom_frames.back()->stamp;
-      // const Eigen::Isometry3d T_world_endpoint_R = (*T_world_origin) * submap->T_origin_endpoint_R;
-      // trajectory->update_anchor(stamp_endpoint_R, T_world_endpoint_R);
+  glim::DDSCallbacks::on_submap_data.add(
+      [this](uint32_t submap_id, const Eigen::Isometry3f &submap_pose,
+             glim::RawPoints::ConstPtr submap_points) {
+        // const double stamp_endpoint_R = submap->odom_frames.back()->stamp;
+        // const Eigen::Isometry3d T_world_endpoint_R = (*T_world_origin) *
+        // submap->T_origin_endpoint_R;
+        // trajectory->update_anchor(stamp_endpoint_R, T_world_endpoint_R);
 
-      auto viewer = guik::LightViewer::instance();
-      auto cloud_buffer = std::make_shared<glk::PointCloudBuffer>(submap_points->points, submap_points->points.size());
-      auto shader_setting = guik::Rainbow(submap_pose.matrix());
-      shader_setting.add("point_scale", 1.0f);
+        std::cout << "on submap data" << std::endl;
+        invoke([this, submap_id, submap_pose, submap_points] {
+          auto viewer = guik::LightViewer::instance();
+          auto cloud_buffer =
+              std::make_shared<glk::PointCloudBuffer>(submap_points->points);
+          auto shader_setting = guik::Rainbow(submap_pose.matrix());
+          shader_setting.add("point_scale", 1.0f);
 
-      if (enable_partial_rendering) {
-        cloud_buffer->enable_partial_rendering(partial_rendering_budget);
-        shader_setting.add("dynamic_object", 0).make_transparent();
-      }
+          if (enable_partial_rendering) {
+            cloud_buffer->enable_partial_rendering(partial_rendering_budget);
+            shader_setting.add("dynamic_object", 0).make_transparent();
+          }
 
-      viewer->update_drawable("submap_" + std::to_string(submap_id), cloud_buffer, shader_setting);
+          viewer->update_drawable("submap_" + std::to_string(submap_id),
+                                  cloud_buffer, shader_setting);
+        });
+      });
 
-  });
-
-  glim::DDSCallbacks::on_keyframe.add([this](uint32_t, const Eigen::Isometry3f&, glim::RawPoints::ConstPtr){});
+  glim::DDSCallbacks::on_keyframe.add([this](uint32_t,
+                                             const Eigen::Isometry3f &,
+                                             glim::RawPoints::ConstPtr) {});
 }
 
 bool RemoteViewer::drawable_filter(const std::string &name) { return true; }
@@ -166,20 +178,20 @@ void RemoteViewer::drawable_selection() {
   ImGui::Begin("selection", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
   ImGui::PopStyleColor();
 
-  //if (ImGui::Checkbox("track", &track)) {
-  //  if (track) {
-  //    guik::LightViewer::instance()->reset_center();
-  //  }
-  //}
-  //ImGui::SameLine();
-  //bool show_current = show_current_coord || show_current_points;
-  //if (ImGui::Checkbox("current", &show_current)) {
-  //  show_current_coord = show_current_points = show_current;
-  //}
-  //ImGui::SameLine();
-  //ImGui::Checkbox("coord", &show_current_coord);
-  //ImGui::SameLine();
-  //ImGui::Checkbox("points", &show_current_points);
+  // if (ImGui::Checkbox("track", &track)) {
+  //   if (track) {
+  //     guik::LightViewer::instance()->reset_center();
+  //   }
+  // }
+  // ImGui::SameLine();
+  // bool show_current = show_current_coord || show_current_points;
+  // if (ImGui::Checkbox("current", &show_current)) {
+  //   show_current_coord = show_current_points = show_current;
+  // }
+  // ImGui::SameLine();
+  // ImGui::Checkbox("coord", &show_current_coord);
+  // ImGui::SameLine();
+  // ImGui::Checkbox("points", &show_current_points);
 
   std::vector<const char *> current_color_modes = {"FLAT", "INTENSITY",
                                                    "NORMAL"};
@@ -195,7 +207,8 @@ void RemoteViewer::drawable_selection() {
 
   // ImGui::Separator();
   // bool show_odometry =
-  //     show_odometry_scans || show_odometry_keyframes || show_odometry_factors;
+  //     show_odometry_scans || show_odometry_keyframes ||
+  //     show_odometry_factors;
   // if (ImGui::Checkbox("odometry", &show_odometry)) {
   //   show_odometry_scans = show_odometry_keyframes = show_odometry;
   //   show_odometry_factors &= show_odometry;
@@ -223,7 +236,8 @@ void RemoteViewer::drawable_selection() {
   // ImGui::Checkbox("factors", &show_factors);
   //
   // ImGui::Separator();
-  // if (ImGui::DragFloatRange2("z_range", &z_range[0], &z_range[1], 0.1f, -100.0f,
+  // if (ImGui::DragFloatRange2("z_range", &z_range[0], &z_range[1], 0.1f,
+  // -100.0f,
   //                            100.0f)) {
   //   viewer->shader_setting().add<Eigen::Vector2f>("z_range",
   //                                                 auto_z_range + z_range);
@@ -252,7 +266,8 @@ void RemoteViewer::viewer_loop() {
 
   // auto viewer = guik::LightViewer::instance(
   //     Eigen::Vector2i(config.param("standard_viewer", "viewer_width", 2560),
-  //                     config.param("standard_viewer", "viewer_height", 1440)));
+  //                     config.param("standard_viewer", "viewer_height",
+  //                     1440)));
 
   auto viewer = guik::LightViewer::instance(Eigen::Vector2i(640, 480));
   viewer->enable_vsync();

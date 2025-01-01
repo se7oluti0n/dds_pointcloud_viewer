@@ -6,7 +6,7 @@
 
 namespace idl {
 
-Common::Vector3D from_eigen(const Eigen::Vector3d &v) {
+static Common::Vector3D from_eigen(const Eigen::Vector3d &v) {
   Common::Vector3D res;
   res.x() = v.x();
   res.y() = v.y();
@@ -14,7 +14,7 @@ Common::Vector3D from_eigen(const Eigen::Vector3d &v) {
   return res;
 }
 
-Common::Quaternion from_eigen(const Eigen::Quaterniond &q) {
+static Common::Quaternion from_eigen(const Eigen::Quaterniond &q) {
   Common::Quaternion res;
   res.x() = q.x();
   res.y() = q.y();
@@ -23,14 +23,14 @@ Common::Quaternion from_eigen(const Eigen::Quaterniond &q) {
   return res;
 }
 
-Common::Pose3D from_eigen(const Eigen::Isometry3d &pose) {
+static Common::Pose3D from_eigen(const Eigen::Isometry3d &pose) {
   Common::Pose3D res;
   res.translation() = from_eigen(pose.translation());
   res.rotation() = from_eigen(Eigen::Quaterniond(pose.linear()));
   return res;
 }
 
-Eigen::Vector3d to_eigen(const Common::Vector3D &v) {
+static Eigen::Vector3d to_eigen(const Common::Vector3D &v) {
   Eigen::Vector3d res;
   res.x() = v.x();
   res.y() = v.y();
@@ -38,7 +38,7 @@ Eigen::Vector3d to_eigen(const Common::Vector3D &v) {
   return res;
 }
 
-Eigen::Quaterniond to_eigen(const Common::Quaternion &q) {
+static Eigen::Quaterniond to_eigen(const Common::Quaternion &q) {
   Eigen::Quaterniond res;
   res.x() = q.x();
   res.y() = q.y();
@@ -47,7 +47,7 @@ Eigen::Quaterniond to_eigen(const Common::Quaternion &q) {
   return res;
 }
 
-Eigen::Isometry3d to_eigen(const Common::Pose3D &pose) {
+static Eigen::Isometry3d to_eigen(const Common::Pose3D &pose) {
   Eigen::Isometry3d res;
   res.translation() = to_eigen(pose.translation());
   res.linear() = to_eigen(pose.rotation()).toRotationMatrix();

@@ -3,13 +3,16 @@
 #include "pointcloud_converter.hpp"
 #include <glim/mapping/callbacks.hpp>
 
+#include <glim/util/logging.hpp>
+
 namespace glim {
-GlimDDSClient::GlimDDSClient() {
+GlimDDSClient::GlimDDSClient():
+logger_(create_module_logger("dds_client")){
   kill_switch = false;
   request_to_terminate = false;
 
-  set_callbacks();
   create_dds_publishers();
+  set_callbacks();
   thread = std::thread([this] { run_loop(); });
 }
 
@@ -40,6 +43,8 @@ void GlimDDSClient::set_callbacks() {
       dds_submap_data.pose() = idl::from_eigen(submap->T_world_origin);
       dds_submap_data.pointcloud() = *frame_to_pointcloud2("odom", 0.0, *submap->frame);
       submap_data_publisher_->get_writer()->write(dds_submap_data);
+      logger_->info("dds published submap: {}", submap->id);
+      
     });
 
   });
@@ -55,6 +60,7 @@ void GlimDDSClient::set_callbacks() {
         dds_submap_list.submap_list().push_back(dds_submap);
       }
       submap_list_publisher_->get_writer()->write(dds_submap_list);
+      logger_->info("dds published submap list");
     });
 
   });
@@ -95,7 +101,14 @@ void GlimDDSClient::run_loop()
     for (const auto &task : tasks) {
       task();
     }
+
+    usleep(10000);
   }
 }
 
 } // namespace glim
+
+
+extern "C" glim::ExtensionModule* create_extension_module() {
+  return new glim::GlimDDSClient();
+}
