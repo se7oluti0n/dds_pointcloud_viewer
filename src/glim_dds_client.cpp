@@ -43,7 +43,7 @@ void GlimDDSClient::set_callbacks() {
       dds_submap_data.pose() = idl::from_eigen(submap->T_world_origin);
       dds_submap_data.pointcloud() = *frame_to_pointcloud2("odom", 0.0, *submap->frame);
       submap_data_publisher_->get_writer()->write(dds_submap_data);
-      logger_->info("dds published submap: {}", submap->id);
+      logger_->info("dds insert submap: {}", submap->id);
       
     });
 
@@ -60,7 +60,7 @@ void GlimDDSClient::set_callbacks() {
         dds_submap_list.submap_list().push_back(dds_submap);
       }
       submap_list_publisher_->get_writer()->write(dds_submap_list);
-      logger_->info("dds published submap list");
+      logger_->info("dds published submap list: {}", dds_submap_list.submap_list().size());
     });
 
   });

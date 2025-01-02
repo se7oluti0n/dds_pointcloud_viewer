@@ -42,7 +42,7 @@ DDSSubscriberExample::DDSSubscriberExample(rclcpp::Node::SharedPtr node)
   pointcloud2_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "dds_pointcloud", 10);
   create_submap_data_subscriber();
-  create_submap_data_subscriber();
+  create_submap_list_subscriber();
   create_client();
   running_ = true;
   receiving_thread_ = std::make_shared<std::thread>(
@@ -87,6 +87,7 @@ void DDSSubscriberExample::create_submap_list_subscriber(){
           msg_ros2 = std::const_pointer_cast<const Slam3D::SubmapList>(msg);
 
           // emit gtsam pointcloud 
+          std::cout << "Emit submap list" << std::endl;
           glim::DDSCallbacks::on_submap_list(msg_ros2); // emit raw(gtsam_pointcloud);
         }
       });
