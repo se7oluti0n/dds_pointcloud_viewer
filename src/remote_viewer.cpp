@@ -143,8 +143,8 @@ void RemoteViewer::set_callbacks() {
         // submap->T_origin_endpoint_R;
         // trajectory->update_anchor(stamp_endpoint_R, T_world_endpoint_R);
 
-        std::cout << "on submap data" << std::endl;
         invoke([this, submap_id, submap_pose, submap_points] {
+          std::cout << "[Viewer] render submap data" << submap_id << std::endl;
           auto viewer = guik::LightViewer::instance();
           auto cloud_buffer =
               std::make_shared<glk::PointCloudBuffer>(submap_points->points);

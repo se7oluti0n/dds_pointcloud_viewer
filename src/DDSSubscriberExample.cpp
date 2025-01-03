@@ -87,7 +87,7 @@ void DDSSubscriberExample::create_submap_list_subscriber(){
           msg_ros2 = std::const_pointer_cast<const Slam3D::SubmapList>(msg);
 
           // emit gtsam pointcloud 
-          std::cout << "Emit submap list" << std::endl;
+          std::cout << "[Subscriber] Emit submap list" << std::endl;
           glim::DDSCallbacks::on_submap_list(msg_ros2); // emit raw(gtsam_pointcloud);
         }
       });
@@ -102,12 +102,14 @@ void DDSSubscriberExample::create_submap_list_subscriber(){
 void DDSSubscriberExample::create_submap_data_subscriber(){
   submap_data_listener_ = std::make_shared<DDSListener<Slam3D::SubmapData>>(
       [this](const std::vector<std::shared_ptr<Slam3D::SubmapData>>&data) {
+      std::cout << "=== [Subscriber] Received submap data: " << data.size() << std::endl;
       invoke([this, data]{
         for (auto &msg : data) {
           auto glim_pointcloud = glim::extract_raw_points(msg->pointcloud());
 
           // emit gtsam pointcloud 
           auto submap_pose = idl::to_eigen(msg->pose()).cast<float>();
+          std::cout << "[Subscriber] Emit submap data: " << msg->submap_id() << std::endl;
           glim::DDSCallbacks::on_submap_data(msg->submap_id(), submap_pose, glim_pointcloud); // emit raw(gtsam_pointcloud);
         }
       });

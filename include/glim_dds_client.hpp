@@ -7,8 +7,6 @@
 #include <mutex>
 #include <functional>
 #include <thread>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
 
 #include <glim/util/extension_module.hpp>
 namespace spdlog {
@@ -19,8 +17,8 @@ namespace glim {
 class GlimDDSClient: public ExtensionModule 
 {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   GlimDDSClient();
+  ~GlimDDSClient();
 
   virtual bool ok() const override;
 
