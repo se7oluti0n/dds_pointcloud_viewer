@@ -14,6 +14,8 @@ class logger;
 }
 namespace glim {
 
+class TrajectoryManager;
+
 class GlimDDSClient: public ExtensionModule 
 {
 public:
@@ -39,6 +41,8 @@ private:
   DDSPublisher<Slam3D::Keyframe>::Ptr keyframe_publisher_;
   DDSPublisher<Slam3D::SubmapData>::Ptr submap_data_publisher_;
   std::shared_ptr<spdlog::logger> logger_;
+
+  std::unique_ptr<TrajectoryManager> trajectory_manager_;
 
 };
 

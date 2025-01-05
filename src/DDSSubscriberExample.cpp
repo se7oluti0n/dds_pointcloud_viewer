@@ -43,6 +43,7 @@ DDSSubscriberExample::DDSSubscriberExample(rclcpp::Node::SharedPtr node)
       "dds_pointcloud", 10);
   create_submap_data_subscriber();
   create_submap_list_subscriber();
+  create_keyframe_subscriber();
   create_client();
   running_ = true;
   receiving_thread_ = std::make_shared<std::thread>(
@@ -118,6 +119,26 @@ void DDSSubscriberExample::create_submap_data_subscriber(){
   submap_data_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::SubmapData>>(
     org::eclipse::cyclonedds::domain::default_id(),                                                                           
     "submap_data", submap_data_listener_.get());
+}
+
+void DDSSubscriberExample::create_keyframe_subscriber(){
+  keyframe_listener_ = std::make_shared<DDSListener<Slam3D::Keyframe>>(
+      [this](const std::vector<std::shared_ptr<Slam3D::Keyframe>>&data) {
+      invoke([this, data]{
+        for (auto &msg : data) {
+          auto glim_pointcloud = glim::extract_raw_points(msg->pointcloud());
+
+          // emit gtsam pointcloud 
+          auto keyframe_pose = idl::to_eigen(msg->pose()).cast<float>();
+          glim::DDSCallbacks::on_keyframe(msg->keyframe_id(), keyframe_pose, glim_pointcloud); // emit raw(gtsam_pointcloud);
+        }
+      });
+    
+    });
+
+  keyframe_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::Keyframe>>(
+    org::eclipse::cyclonedds::domain::default_id(),                                                                           
+    "keyframe", keyframe_listener_.get());
 }
 
 void DDSSubscriberExample::create_client() {

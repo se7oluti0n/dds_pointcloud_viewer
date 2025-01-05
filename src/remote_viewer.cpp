@@ -16,6 +16,8 @@
 #include <guik/spdlog_sink.hpp>
 #include <guik/viewer/light_viewer.hpp>
 
+const int max_keyframe_num = 15;
+
 RemoteViewer::RemoteViewer() {
 
   kill_switch = false;
@@ -90,11 +92,10 @@ void RemoteViewer::set_callbacks() {
 
   glim::DDSCallbacks::on_submap_list.add(
       [this](std::shared_ptr<const Slam3D::SubmapList> submaps) {
-        std::cout << "start handle submap list: " 
+        std::cout << "start handle submap list: "
                   << submaps->submap_list().size() << std::endl;
         if (submaps->submap_list().size() == 0)
           return;
-
 
         invoke([this, submaps] {
           std::vector<int> submap_ids(submaps->submap_list().size());
@@ -161,9 +162,26 @@ void RemoteViewer::set_callbacks() {
         });
       });
 
-  glim::DDSCallbacks::on_keyframe.add([this](uint32_t,
-                                             const Eigen::Isometry3f &,
-                                             glim::RawPoints::ConstPtr) {});
+  glim::DDSCallbacks::on_keyframe.add(
+      [this](uint32_t keyframe_Id, const Eigen::Isometry3f &keyframe_pose,
+             glim::RawPoints::ConstPtr keyframe_points) {
+        invoke([this, keyframe_Id, keyframe_pose, keyframe_points] {
+          auto keyframe_id = keyframe_Id % max_keyframe_num;
+
+          std::cout << " [Viewer] render keyframe" << keyframe_id << std::endl;
+          auto viewer = guik::LightViewer::instance();
+          auto cloud_buffer =
+              std::make_shared<glk::PointCloudBuffer>(keyframe_points->points);
+          // TODO: update keyframe pose from odom frame to world frame
+          guik::ShaderSetting shader_setting =
+              guik::FlatColor(1.0f, 0.5f, 0.0f, 1.0f, keyframe_pose.matrix());
+          // auto shader_setting = guik::Rainbow(keyframe_pose.matrix());
+          shader_setting.add("point_scale", 0.8f);
+
+          viewer->update_drawable("keyframe_" + std::to_string(keyframe_id),
+                                  cloud_buffer, shader_setting);
+        });
+      });
 }
 
 bool RemoteViewer::drawable_filter(const std::string &name) { return true; }

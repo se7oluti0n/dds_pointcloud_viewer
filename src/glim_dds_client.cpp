@@ -4,12 +4,14 @@
 #include <glim/mapping/callbacks.hpp>
 
 #include <glim/util/logging.hpp>
+#include <glim/util/trajectory_manager.hpp>
 
 namespace glim {
 GlimDDSClient::GlimDDSClient():
 logger_(create_module_logger("dds_client")){
   kill_switch = false;
   request_to_terminate = false;
+  trajectory_manager_ = std::make_unique<TrajectoryManager>();
 
   create_dds_publishers();
   set_callbacks();

@@ -1,7 +1,5 @@
 #include "DDSPublisherExample.hpp"
 
-#include <chrono>
-
 using namespace org::eclipse::cyclonedds;
 
 PointCloudData::PointField
@@ -118,16 +116,8 @@ void DDSPublisherExample::sending_loop()
       auto msg = pointcloud2_queue_.front();
       pointcloud2_queue_.pop_front();
 
-
-      auto preTakeTime = dds_time();
       PointCloudData::PointCloud2 cloud = from_ros2_pointcloud(msg);
       writer_->write(cloud);
-      auto postTakeTime = dds_time();
-
-      auto difference = (postTakeTime - preTakeTime) / DDS_NSECS_IN_USEC;
-
-      // std::cout << "=== [Publisher] Sent data: " << cloud.data().size()
-      //           << ", take : " << difference << std::endl;
     }
 
     usleep(10000);

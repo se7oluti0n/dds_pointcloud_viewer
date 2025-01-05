@@ -20,12 +20,15 @@ public:
   void create_client();
   void create_submap_list_subscriber();
   void create_submap_data_subscriber();
+  void create_keyframe_subscriber();
+
   void receiving_loop();
 
 private:
   std::unique_ptr<DDSSubscriber<PointCloudData::PointCloud2>> pointcloud_subscriber_;
   std::unique_ptr<DDSSubscriber<Slam3D::SubmapList>> submap_list_subscriber_;
   std::unique_ptr<DDSSubscriber<Slam3D::SubmapData>> submap_data_subscriber_;
+  std::unique_ptr<DDSSubscriber<Slam3D::Keyframe>> keyframe_subscriber_;
 
   rclcpp::Node::SharedPtr node_;
 
@@ -34,6 +37,7 @@ private:
   std::shared_ptr<DDSListener<PointCloudData::PointCloud2>> listener_;
   std::shared_ptr<DDSListener<Slam3D::SubmapList>> submap_list_listener_;
   std::shared_ptr<DDSListener<Slam3D::SubmapData>> submap_data_listener_;
+  std::shared_ptr<DDSListener<Slam3D::Keyframe>> keyframe_listener_;
 
   std::shared_ptr<std::thread> receiving_thread_;
   bool running_{false};
