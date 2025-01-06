@@ -16,4 +16,9 @@ module Common {
       Vector3D translation;
       Quaternion rotation;
     };
+
+    struct Pose3DTimestamped {
+      double timestamp;
+      Pose3D pose;
+    };
 };

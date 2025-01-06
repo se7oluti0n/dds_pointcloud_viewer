@@ -182,6 +182,17 @@ void RemoteViewer::set_callbacks() {
                                   cloud_buffer, shader_setting);
         });
       });
+
+  glim::DDSCallbacks::on_lidar_pose.add(
+    [this](double stamp, const Eigen::Isometry3f &pose) {
+      invoke([this, stamp, pose] {
+        auto viewer = guik::LightViewer::instance();
+        viewer->update_drawable("lidar_pose",
+                                glk::Primitives::coordinate_system(),
+                                guik::VertexColor(pose));
+      });
+    }
+  );
 }
 
 bool RemoteViewer::drawable_filter(const std::string &name) { return true; }

@@ -2,6 +2,7 @@
 #include "idl_data_conversion.hpp"
 #include "pointcloud_converter.hpp"
 #include <glim/mapping/callbacks.hpp>
+#include <glim/odometry/callbacks.hpp>
 
 #include <glim/util/logging.hpp>
 #include <glim/util/trajectory_manager.hpp>
@@ -42,10 +43,46 @@ void GlimDDSClient::create_dds_publishers()
   keyframe_publisher_ = std::make_shared<DDSPublisher<Slam3D::Keyframe>>(
     domain_id, "keyframe"
   );
+  pose_publisher_ = std::make_shared<DDSPublisher<Common::Pose3DTimestamped>>(
+    domain_id, "lidar_pose"
+  );
 
 }
 
 void GlimDDSClient::set_callbacks() {
+  // New frame callback
+  OdometryEstimationCallbacks::on_new_frame.add([this](const EstimationFrame::ConstPtr& new_frame) {
+    invoke([this, new_frame] {
+      // auto viewer = guik::LightViewer::instance();
+      // auto cloud_buffer = std::make_shared<glk::PointCloudBuffer>(new_frame->frame->points, new_frame->frame->size());
+      //
+      // last_id = new_frame->id;
+      // last_num_points = new_frame->frame->size();
+      // if (new_frame->raw_frame && new_frame->raw_frame->size()) {
+      //   last_point_stamps.first = new_frame->raw_frame->times.front();
+      //   last_point_stamps.second = new_frame->raw_frame->times.back();
+      // }
+      // last_imu_vel = new_frame->v_world_imu;
+      // last_imu_bias = new_frame->imu_bias;
+
+      trajectory_manager_->add_odom(new_frame->stamp, new_frame->T_world_sensor(), 1);
+      // const Eigen::Isometry3f pose = resolve_pose(new_frame);
+      const Eigen::Isometry3f pose = trajectory_manager_->odom2world(new_frame->T_world_sensor()).cast<float>();
+
+      Common::Pose3DTimestamped dds_pose;
+      dds_pose.timestamp() = new_frame->stamp;
+      dds_pose.pose() = idl::from_eigen(pose.cast<double>());
+      pose_publisher_->get_writer()->write(dds_pose);
+      logger_->info("[dds client] Publish pose: {}", new_frame->stamp);
+
+      // if (track) {
+      //   viewer->lookat(pose.translation());
+      // }
+
+
+      // viewer->update_drawable("current_coord", glk::Primitives::coordinate_system(), guik::VertexColor(pose * Eigen::UniformScaling<float>(1.5f)));
+    });
+  });
   GlobalMappingCallbacks::on_insert_submap.add([this](const SubMap::ConstPtr& submap){
     invoke([this, submap]{
       Slam3D::SubmapData dds_submap_data;
@@ -86,8 +123,8 @@ void GlimDDSClient::set_callbacks() {
       keyframe_publisher_->get_writer()->write(dds_keyframe);
     });
 
-
   });
+
 }
 
 void GlimDDSClient::invoke(const std::function<void()> &task) {

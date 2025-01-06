@@ -35,6 +35,7 @@ private:
 
   bool enable_partial_rendering;
   int partial_rendering_budget;
+  bool track;
 
   Eigen::Vector2f z_range;
   Eigen::Vector2f auto_z_range;

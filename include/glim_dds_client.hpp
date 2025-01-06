@@ -40,6 +40,7 @@ private:
   DDSPublisher<Slam3D::SubmapList>::Ptr submap_list_publisher_;
   DDSPublisher<Slam3D::Keyframe>::Ptr keyframe_publisher_;
   DDSPublisher<Slam3D::SubmapData>::Ptr submap_data_publisher_;
+  DDSPublisher<Common::Pose3DTimestamped>::Ptr pose_publisher_;
   std::shared_ptr<spdlog::logger> logger_;
 
   std::unique_ptr<TrajectoryManager> trajectory_manager_;

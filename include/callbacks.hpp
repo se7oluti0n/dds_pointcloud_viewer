@@ -13,6 +13,7 @@ struct DDSCallbacks {
   static CallbackSlot<void(std::shared_ptr<const Slam3D::SubmapList>)> on_submap_list;
   static CallbackSlot<void(uint32_t, const Eigen::Isometry3f&, glim::RawPoints::ConstPtr)> on_submap_data;
   static CallbackSlot<void(uint32_t, const Eigen::Isometry3f&, glim::RawPoints::ConstPtr)> on_keyframe;
+  static CallbackSlot<void(double, const Eigen::Isometry3f&)> on_lidar_pose;
 };
 }
 
