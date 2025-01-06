@@ -22,6 +22,7 @@ RemoteViewer::RemoteViewer() {
 
   kill_switch = false;
   request_to_terminate = false;
+  track = true;
 
   current_color_mode = 0;
   z_range = Eigen::Vector2d(-2.0, 4.0).cast<float>();
@@ -184,15 +185,17 @@ void RemoteViewer::set_callbacks() {
       });
 
   glim::DDSCallbacks::on_lidar_pose.add(
-    [this](double stamp, const Eigen::Isometry3f &pose) {
-      invoke([this, stamp, pose] {
-        auto viewer = guik::LightViewer::instance();
-        viewer->update_drawable("lidar_pose",
-                                glk::Primitives::coordinate_system(),
-                                guik::VertexColor(pose));
+      [this](double stamp, const Eigen::Isometry3f &pose) {
+        invoke([this, stamp, pose] {
+          auto viewer = guik::LightViewer::instance();
+          if (track) {
+            viewer->lookat(pose.translation());
+          }
+          viewer->update_drawable("lidar_pose",
+                                  glk::Primitives::coordinate_system(),
+                                  guik::VertexColor(pose));
+        });
       });
-    }
-  );
 }
 
 bool RemoteViewer::drawable_filter(const std::string &name) { return true; }
@@ -207,11 +210,11 @@ void RemoteViewer::drawable_selection() {
   ImGui::Begin("selection", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
   ImGui::PopStyleColor();
 
-  // if (ImGui::Checkbox("track", &track)) {
-  //   if (track) {
-  //     guik::LightViewer::instance()->reset_center();
-  //   }
-  // }
+  if (ImGui::Checkbox("track", &track)) {
+    if (track) {
+      guik::LightViewer::instance()->reset_center();
+    }
+  }
   // ImGui::SameLine();
   // bool show_current = show_current_coord || show_current_points;
   // if (ImGui::Checkbox("current", &show_current)) {
