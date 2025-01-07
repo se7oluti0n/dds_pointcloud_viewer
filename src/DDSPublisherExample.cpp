@@ -74,7 +74,7 @@ match_readers_and_writers(dds::pub::DataWriter<PointCloudData::PointCloud2> &wr,
 DDSPublisherExample::DDSPublisherExample(rclcpp::Node::SharedPtr node)
     : node_(node) {
   pointcloud2_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
-      "pointcloud2", 10,
+      "os_cloud_node/points", 10,
       std::bind(&DDSPublisherExample::ros2_pointcloud_callback, this,
                 std::placeholders::_1));
 

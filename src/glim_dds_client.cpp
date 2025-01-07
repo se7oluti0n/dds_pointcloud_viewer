@@ -31,20 +31,29 @@ bool GlimDDSClient::ok() const { return true; }
 
 void GlimDDSClient::create_dds_publishers()
 {
-  auto domain_id = 
-    org::eclipse::cyclonedds::domain::default_id();                                                                           
+  // auto domain_id = 
+  //   org::eclipse::cyclonedds::domain::default_id();                                                                           
+  dds::topic::qos::TopicQos tqos = dds::topic::qos::TopicQos();
+  dds::pub::qos::PublisherQos pqos = dds::pub::qos::PublisherQos();
+
+  dds::pub::qos::DataWriterQos wqos = dds::pub::qos::DataWriterQos();
+  wqos << dds::core::policy::Reliability::BestEffort(); 
+  uint32_t domain_id = 0;
 
   submap_list_publisher_ = std::make_shared<DDSPublisher<Slam3D::SubmapList>>(
-    domain_id, "submap_list"
+    domain_id, "submap_list", tqos, pqos, wqos
   );
   submap_data_publisher_ = std::make_shared<DDSPublisher<Slam3D::SubmapData>>(
-    domain_id, "submap_data"
+    domain_id, "submap_data", tqos, pqos, wqos
+
   );
   keyframe_publisher_ = std::make_shared<DDSPublisher<Slam3D::Keyframe>>(
-    domain_id, "keyframe"
+    domain_id, "keyframe", tqos, pqos, wqos
+
   );
   pose_publisher_ = std::make_shared<DDSPublisher<Common::Pose3DTimestamped>>(
-    domain_id, "lidar_pose"
+    domain_id, "lidar_pose", tqos, pqos, wqos
+
   );
 
 }
