@@ -36,11 +36,11 @@ private:
 
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud2_pub_;
 
-  std::shared_ptr<DDSListener<PointCloudData::PointCloud2>> listener_;
-  std::shared_ptr<DDSListener<Slam3D::SubmapList>> submap_list_listener_;
-  std::shared_ptr<DDSListener<Slam3D::SubmapData>> submap_data_listener_;
-  std::shared_ptr<DDSListener<Slam3D::Keyframe>> keyframe_listener_;
-  std::shared_ptr<DDSListener<Common::Pose3DTimestamped>> lidar_pose_listener_;
+  // std::shared_ptr<DDSListener<PointCloudData::PointCloud2>> listener_;
+  // std::shared_ptr<DDSListener<Slam3D::SubmapList>> submap_list_listener_;
+  // std::shared_ptr<DDSListener<Slam3D::SubmapData>> submap_data_listener_;
+  // std::shared_ptr<DDSListener<Slam3D::Keyframe>> keyframe_listener_;
+  // std::shared_ptr<DDSListener<Common::Pose3DTimestamped>> lidar_pose_listener_;
 
   std::shared_ptr<std::thread> receiving_thread_;
   bool running_{false};

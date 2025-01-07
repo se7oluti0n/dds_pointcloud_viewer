@@ -36,23 +36,23 @@ void GlimDDSClient::create_dds_publishers()
   dds::topic::qos::TopicQos tqos = dds::topic::qos::TopicQos();
   dds::pub::qos::PublisherQos pqos = dds::pub::qos::PublisherQos();
 
-  dds::pub::qos::DataWriterQos wqos = dds::pub::qos::DataWriterQos();
-  wqos << dds::core::policy::Reliability::BestEffort(); 
+  dds::pub::qos::DataWriterQos wqos_besteffort = dds::pub::qos::DataWriterQos();
+  wqos_besteffort << dds::core::policy::Reliability::BestEffort(); 
   uint32_t domain_id = 0;
 
   submap_list_publisher_ = std::make_shared<DDSPublisher<Slam3D::SubmapList>>(
-    domain_id, "submap_list", tqos, pqos, wqos
+    domain_id, "submap_list", tqos, pqos, wqos_besteffort
   );
   submap_data_publisher_ = std::make_shared<DDSPublisher<Slam3D::SubmapData>>(
-    domain_id, "submap_data", tqos, pqos, wqos
+    domain_id, "submap_data", tqos, pqos, wqos_besteffort
 
   );
   keyframe_publisher_ = std::make_shared<DDSPublisher<Slam3D::Keyframe>>(
-    domain_id, "keyframe", tqos, pqos, wqos
+    domain_id, "keyframe", tqos, pqos, wqos_besteffort
 
   );
   pose_publisher_ = std::make_shared<DDSPublisher<Common::Pose3DTimestamped>>(
-    domain_id, "lidar_pose", tqos, pqos, wqos
+    domain_id, "lidar_pose", tqos, pqos, wqos_besteffort
 
   );
 
