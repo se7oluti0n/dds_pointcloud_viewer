@@ -41,6 +41,9 @@ DDSSubscriberExample::DDSSubscriberExample(rclcpp::Node::SharedPtr node)
 
   pointcloud2_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "dds_pointcloud", 10);
+
+  domain_id_ = 0;
+  wqos_ << dds::core::policy::Reliability::BestEffort();
   create_submap_data_subscriber();
   create_submap_list_subscriber();
   create_keyframe_subscriber();
@@ -97,8 +100,9 @@ void DDSSubscriberExample::create_submap_list_subscriber() {
       });
 
   submap_list_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::SubmapList>>(
-      org::eclipse::cyclonedds::domain::default_id(), "submap_list",
-      submap_list_listener_.get());
+      domain_id_, "submap_list",
+      submap_list_listener_.get(),
+      tqos_, pqos_, wqos_);
 }
 
 void DDSSubscriberExample::create_submap_data_subscriber() {
@@ -122,8 +126,9 @@ void DDSSubscriberExample::create_submap_data_subscriber() {
       });
 
   submap_data_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::SubmapData>>(
-      org::eclipse::cyclonedds::domain::default_id(), "submap_data",
-      submap_data_listener_.get());
+      domain_id_, "submap_data",
+      submap_data_listener_.get(),
+      tqos_, pqos_, wqos_);
 }
 
 void DDSSubscriberExample::create_keyframe_subscriber() {
@@ -143,8 +148,9 @@ void DDSSubscriberExample::create_keyframe_subscriber() {
       });
 
   keyframe_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::Keyframe>>(
-      org::eclipse::cyclonedds::domain::default_id(), "keyframe",
-      keyframe_listener_.get());
+      domain_id_, "keyframe",
+      keyframe_listener_.get(),
+      tqos_, pqos_, wqos_);
 }
 
 void DDSSubscriberExample::create_lidar_pose_subscriber() {
@@ -160,8 +166,9 @@ void DDSSubscriberExample::create_lidar_pose_subscriber() {
       });
 
   lidar_pose_subscriber_ = std::make_unique<DDSSubscriber<Common::Pose3DTimestamped>>(
-      org::eclipse::cyclonedds::domain::default_id(), "lidar_pose",
-      lidar_pose_listener_.get());
+      domain_id_, "lidar_pose",
+      lidar_pose_listener_.get(),
+      tqos_, pqos_, wqos_);
 }
 
 void DDSSubscriberExample::create_client() {
@@ -196,6 +203,6 @@ void DDSSubscriberExample::create_client() {
 
   pointcloud_subscriber_ =
       std::make_unique<DDSSubscriber<PointCloudData::PointCloud2>>(
-          org::eclipse::cyclonedds::domain::default_id(), "ManhTopic",
+          domain_id_, "ManhTopic",
           listener_.get(), tqos, sqos);
 }

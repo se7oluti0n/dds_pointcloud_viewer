@@ -49,4 +49,8 @@ private:
   void invoke(const std::function<void()> &task);
   std::mutex invoke_queue_mutex;
   std::vector<std::function<void()>> invoke_queue;
+  uint32_t domain_id_;
+  dds::topic::qos::TopicQos tqos_;
+  dds::sub::qos::SubscriberQos pqos_;
+  dds::sub::qos::DataReaderQos wqos_;
 };
