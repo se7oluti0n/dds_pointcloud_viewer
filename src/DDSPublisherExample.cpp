@@ -104,7 +104,7 @@ void DDSPublisherExample::create_publisher() {
   std::cout << "=== [Publisher] Waiting for sample to be accepted."
             << std::endl;
 
-  match_readers_and_writers(*writer_, dds::core::Duration::from_secs(10));
+  match_readers_and_writers(*writer_, dds::core::Duration::from_secs(33));
 }
 
 void DDSPublisherExample::sending_loop()

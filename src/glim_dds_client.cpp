@@ -82,7 +82,7 @@ void GlimDDSClient::set_callbacks() {
       dds_pose.timestamp() = new_frame->stamp;
       dds_pose.pose() = idl::from_eigen(pose.cast<double>());
       pose_publisher_->get_writer()->write(dds_pose);
-      logger_->info("[dds client] Publish pose: {}", new_frame->stamp);
+      // logger_->info("[dds client] Publish pose: {}", new_frame->stamp);
 
       // if (track) {
       //   viewer->lookat(pose.translation());

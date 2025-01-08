@@ -83,22 +83,6 @@ void DDSSubscriberExample::invoke(const std::function<void()> &task) {
 }
 
 void DDSSubscriberExample::create_submap_list_subscriber() {
-  // submap_list_listener_ = std::make_shared<DDSListener<Slam3D::SubmapList>>(
-  //     [this](const std::vector<std::shared_ptr<Slam3D::SubmapList>> &data) {
-  //       invoke([this, data] {
-  //         for (auto &msg : data) {
-  //           std::shared_ptr<const Slam3D::SubmapList> msg_ros2;
-  //
-  //           msg_ros2 = std::const_pointer_cast<const
-  //           Slam3D::SubmapList>(msg);
-  //
-  //           // emit gtsam pointcloud
-  //           std::cout << "[Subscriber] Emit submap list" << std::endl;
-  //           glim::DDSCallbacks::on_submap_list(
-  //               msg_ros2); // emit raw(gtsam_pointcloud);
-  //         }
-  //       });
-  //     });
 
   submap_list_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::SubmapList>>(
       domain_id_, "submap_list", tqos_, pqos_, wqos_,
@@ -115,26 +99,6 @@ void DDSSubscriberExample::create_submap_list_subscriber() {
 }
 
 void DDSSubscriberExample::create_submap_data_subscriber() {
-  // submap_data_listener_ = std::make_shared<DDSListener<Slam3D::SubmapData>>(
-  //     [this](const std::vector<std::shared_ptr<Slam3D::SubmapData>> &data) {
-  //       std::cout << "=== [Subscriber] Received submap data: " << data.size()
-  //                 << std::endl;
-  //       invoke([this, data] {
-  //         for (auto &msg : data) {
-  //           auto glim_pointcloud =
-  //           glim::extract_raw_points(msg->pointcloud());
-  //
-  //           // emit gtsam pointcloud
-  //           auto submap_pose = idl::to_eigen(msg->pose()).cast<float>();
-  //           std::cout << "[Subscriber] Emit submap data: " <<
-  //           msg->submap_id()
-  //                     << std::endl;
-  //           glim::DDSCallbacks::on_submap_data(
-  //               msg->submap_id(), submap_pose,
-  //               glim_pointcloud); // emit raw(gtsam_pointcloud);
-  //         }
-  //       });
-  //     });
 
   submap_data_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::SubmapData>>(
       domain_id_, "submap_data", tqos_, pqos_, wqos_,
@@ -149,21 +113,6 @@ void DDSSubscriberExample::create_submap_data_subscriber() {
 }
 
 void DDSSubscriberExample::create_keyframe_subscriber() {
-  // keyframe_listener_ = std::make_shared<DDSListener<Slam3D::Keyframe>>(
-  //     [this](const std::vector<std::shared_ptr<Slam3D::Keyframe>> &data) {
-  //       invoke([this, data] {
-  //         for (auto &msg : data) {
-  //           auto glim_pointcloud =
-  //           glim::extract_raw_points(msg->pointcloud());
-  //
-  //           // emit gtsam pointcloud
-  //           auto keyframe_pose = idl::to_eigen(msg->pose()).cast<float>();
-  //           glim::DDSCallbacks::on_keyframe(
-  //               msg->keyframe_id(), keyframe_pose,
-  //               glim_pointcloud); // emit raw(gtsam_pointcloud);
-  //         }
-  //       });
-  //     });
 
   keyframe_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::Keyframe>>(
       domain_id_, "keyframe", tqos_, pqos_, wqos_,
@@ -181,18 +130,6 @@ void DDSSubscriberExample::create_keyframe_subscriber() {
 }
 
 void DDSSubscriberExample::create_lidar_pose_subscriber() {
-  // lidar_pose_listener_ =
-  // std::make_shared<DDSListener<Common::Pose3DTimestamped>>(
-  //     [this](
-  //         const std::vector<std::shared_ptr<Common::Pose3DTimestamped>>
-  //         &data) {
-  //       invoke([this, data] {
-  //         for (auto &msg : data) {
-  //           auto locpose = idl::to_eigen(msg->pose()).cast<float>();
-  //           glim::DDSCallbacks::on_lidar_pose(msg->timestamp(), locpose);
-  //         }
-  //       });
-  //     });
 
   lidar_pose_subscriber_ =
       std::make_unique<DDSSubscriber<Common::Pose3DTimestamped>>(
@@ -216,24 +153,6 @@ void DDSSubscriberExample::create_client() {
   dds::sub::qos::SubscriberQos sqos;
   sqos << dds::core::policy::Partition("pong");
   // create listener
-  // std::cout << "=== [Subscriber] Create listener." << std::endl;
-  //
-  // listener_ = std::make_shared<DDSListener<PointCloudData::PointCloud2>>(
-  //     [this](const std::vector<std::shared_ptr<PointCloudData::PointCloud2>>
-  //                &data) {
-  //       invoke([this, data] {
-  //         for (auto &msg : data) {
-  //           sensor_msgs::msg::PointCloud2 msg_ros2;
-  //           msg_ros2 = from_dds_pointcloud(*msg);
-  //           pointcloud2_pub_->publish(msg_ros2);
-  //
-  //           // emit gtsam pointcloud
-  //           auto gtsam_pointcloud = glim::extract_raw_points(*msg);
-  //           glim::DDSCallbacks::on_raw_pointcloud(
-  //               gtsam_pointcloud); // emit raw(gtsam_pointcloud);
-  //         }
-  //       });
-  //     });
 
   pointcloud_subscriber_ =
       std::make_unique<DDSSubscriber<PointCloudData::PointCloud2>>(
