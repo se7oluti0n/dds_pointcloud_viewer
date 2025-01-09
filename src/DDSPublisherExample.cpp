@@ -97,7 +97,7 @@ void DDSPublisherExample::create_publisher() {
   pqos << dds::core::policy::Partition("pong");
   
   dds_publisher_ = std::make_unique<DDSPublisher<PointCloudData::PointCloud2>>( 
-    domain::default_id(), "ManhTopic", tqos, pqos);
+    0, "ManhTopic", tqos, pqos);
 
   writer_ = dds_publisher_->get_writer();
 
