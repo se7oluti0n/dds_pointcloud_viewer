@@ -38,6 +38,7 @@ void GlimDDSClient::create_dds_publishers()
 
   dds::pub::qos::DataWriterQos wqos_besteffort = dds::pub::qos::DataWriterQos();
   wqos_besteffort << dds::core::policy::Reliability::BestEffort(); 
+  wqos_besteffort << dds::core::policy::History::KeepLast(5);
   uint32_t domain_id = 0;
 
   submap_list_publisher_ = std::make_shared<DDSPublisher<Slam3D::SubmapList>>(

@@ -44,6 +44,7 @@ DDSSubscriberExample::DDSSubscriberExample(rclcpp::Node::SharedPtr node)
 
   domain_id_ = 0;
   wqos_ << dds::core::policy::Reliability::BestEffort();
+  wqos_ << dds::core::policy::History::KeepLast(5);
   create_submap_data_subscriber();
   create_submap_list_subscriber();
   create_keyframe_subscriber();
@@ -70,7 +71,7 @@ void DDSSubscriberExample::receiving_loop() {
     for (const auto &task : tasks) {
       task();
     }
-    usleep(10000);
+    usleep(1000);
   }
 }
 
@@ -88,12 +89,16 @@ void DDSSubscriberExample::create_submap_list_subscriber() {
       domain_id_, "submap_list", tqos_, pqos_, wqos_,
       [this](const std::shared_ptr<Slam3D::SubmapList> &msg) {
         invoke([this, msg] {
+          auto startTime = dds_time();
           std::shared_ptr<const Slam3D::SubmapList> msg_ros2;
 
           msg_ros2 = std::const_pointer_cast<const Slam3D::SubmapList>(msg);
 
           glim::DDSCallbacks::on_submap_list(
               msg_ros2); // emit raw(gtsam_pointcloud);
+          auto endTime = dds_time();
+          std::cout << "submap list Task time: " << (endTime - startTime) * 1e-6
+                    << " ms" << std::endl;
         });
       });
 }
@@ -104,10 +109,14 @@ void DDSSubscriberExample::create_submap_data_subscriber() {
       domain_id_, "submap_data", tqos_, pqos_, wqos_,
       [this](const std::shared_ptr<Slam3D::SubmapData> &msg) {
         invoke([this, msg] {
+          auto startTime = dds_time();
           auto glim_pointcloud = glim::extract_raw_points(msg->pointcloud());
           auto submap_pose = idl::to_eigen(msg->pose()).cast<float>();
           glim::DDSCallbacks::on_submap_data(msg->submap_id(), submap_pose,
                                              glim_pointcloud);
+          auto endTime = dds_time();
+          std::cout << "submap data Task time: " << (endTime - startTime) * 1e-6
+                    << " ms" << std::endl;
         });
       });
 }
@@ -118,6 +127,7 @@ void DDSSubscriberExample::create_keyframe_subscriber() {
       domain_id_, "keyframe", tqos_, pqos_, wqos_,
       [this](const std::shared_ptr<Slam3D::Keyframe> &msg) {
         invoke([this, msg] {
+          auto startTime = dds_time();
           auto glim_pointcloud = glim::extract_raw_points(msg->pointcloud());
 
           // emit gtsam pointcloud
@@ -125,6 +135,9 @@ void DDSSubscriberExample::create_keyframe_subscriber() {
           glim::DDSCallbacks::on_keyframe(
               msg->keyframe_id(), keyframe_pose,
               glim_pointcloud); // emit raw(gtsam_pointcloud);
+          auto endTime = dds_time();
+          std::cout << "keyframe Task time: " << (endTime - startTime) * 1e-6
+                    << " ms" << std::endl;
         });
       });
 }
@@ -136,8 +149,12 @@ void DDSSubscriberExample::create_lidar_pose_subscriber() {
           domain_id_, "lidar_pose", tqos_, pqos_, wqos_,
           [this](const std::shared_ptr<Common::Pose3DTimestamped> &msg) {
             invoke([this, msg] {
+              auto startTime = dds_time();
               auto locpose = idl::to_eigen(msg->pose()).cast<float>();
               glim::DDSCallbacks::on_lidar_pose(msg->timestamp(), locpose);
+              auto endTime = dds_time();
+              std::cout << "lidar pose Task time: "
+                        << (endTime - startTime) * 1e-6 << " ms" << std::endl;
             });
           });
 }
