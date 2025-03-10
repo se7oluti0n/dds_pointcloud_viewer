@@ -18,7 +18,7 @@
 
 const int max_keyframe_num = 15;
 
-RemoteViewer::RemoteViewer() {
+RemoteViewer::RemoteViewer(): CallbackWorker() {
 
   kill_switch = false;
   request_to_terminate = false;
@@ -31,25 +31,14 @@ RemoteViewer::RemoteViewer() {
   enable_partial_rendering = false;
   partial_rendering_budget = 1024;
   set_callbacks();
-  thread = std::thread([this] { viewer_loop(); });
+  start();
 }
 
 RemoteViewer::~RemoteViewer() {
-  kill_switch = true;
-  if (thread.joinable()) {
-    thread.join();
-  }
 }
 
 // bool RemoteViewer::ok() const { return !request_to_terminate; }
 
-void RemoteViewer::invoke(const std::function<void()> &task) {
-  if (kill_switch) {
-    return;
-  }
-  std::lock_guard<std::mutex> lock(invoke_queue_mutex);
-  invoke_queue.push_back(task);
-}
 
 void RemoteViewer::set_callbacks() {
 
@@ -58,6 +47,9 @@ void RemoteViewer::set_callbacks() {
         std::cout << "Start handle raw pointcloud" << std::endl;
         invoke([this, gtsam_pointcloud] {
           auto viewer = guik::LightViewer::instance();
+          viewer->use_topdown_camera_control();
+        
+
           auto cloud_buffer =
               std::make_shared<glk::PointCloudBuffer>(gtsam_pointcloud->points);
           Eigen::Isometry3f pose = Eigen::Isometry3f::Identity();
@@ -200,6 +192,16 @@ void RemoteViewer::set_callbacks() {
 
 bool RemoteViewer::drawable_filter(const std::string &name) { return true; }
 
+
+void RemoteViewer::drawable_session_list() {
+// fill imu gui UI here
+  auto viewer = guik::LightViewer::instance();
+  ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.5));
+  ImGui::Begin("session_list", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+  ImGui::PopStyleColor();
+
+}
+
 void RemoteViewer::drawable_selection() {
   auto viewer = guik::LightViewer::instance();
 
@@ -231,10 +233,13 @@ void RemoteViewer::drawable_selection() {
   ImGui::Combo("color_mode", &current_color_mode, current_color_modes.data(),
                current_color_modes.size());
 
-  ImGui::SameLine();
-  if (ImGui::Button("Log")) {
-    viewer->register_ui_callback(
-        "logging", guik::create_logger_ui(glim::get_ringbuffer_sink(), 0.5));
+  // ImGui::SameLine();
+  // if (ImGui::Button("Log")) {
+  //   viewer->register_ui_callback(
+  //       "logging", guik::create_logger_ui(glim::get_ringbuffer_sink(), 0.5));
+  // }
+  if (ImGui::Button("Session list")) {
+    viewer->register_ui_callback("session_list", [this]{ drawable_session_list();});  
   }
 
   // ImGui::Separator();
@@ -293,7 +298,7 @@ void RemoteViewer::drawable_selection() {
   // }
 }
 
-void RemoteViewer::viewer_loop() {
+void RemoteViewer::run() {
   // glim::Config config(glim::GlobalConfig::get_config_path("config_viewer"));
 
   // auto viewer = guik::LightViewer::instance(

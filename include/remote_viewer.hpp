@@ -1,38 +1,26 @@
 #pragma once
 
-#include <atomic>
+#include "callback_worker.hpp"
 #include <glim/util/extension_module.hpp>
-#include <mutex>
-#include <functional>
-#include <thread>
 
 #include <Eigen/Core>
 using namespace glim;
 using namespace std;
 
-class RemoteViewer{
+class RemoteViewer: public CallbackWorker {
 public:
   RemoteViewer();
   ~RemoteViewer();
 
-  void invoke(const std::function<void()> &task);
-
 private:
   void set_callbacks();
-  void viewer_loop();
+  virtual void run() override;
 
   bool drawable_filter(const std::string& name);
   void drawable_selection();
+  void drawable_session_list();
 
   // Private variables
-
-  std::atomic_bool request_to_terminate;
-  std::atomic_bool kill_switch;
-  std::thread thread;
-
-  std::mutex invoke_queue_mutex;
-  std::vector<std::function<void()>> invoke_queue;
-
   bool enable_partial_rendering;
   int partial_rendering_budget;
   bool track;
