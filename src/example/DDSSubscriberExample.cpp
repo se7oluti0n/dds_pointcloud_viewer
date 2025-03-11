@@ -1,4 +1,4 @@
-#include "DDSSubscriberExample.hpp"
+#include "example/DDSSubscriberExample.hpp"
 
 #include "callbacks.hpp"
 #include "idl_data_conversion.hpp"

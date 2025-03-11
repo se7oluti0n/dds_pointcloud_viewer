@@ -1,7 +1,7 @@
 #pragma once
 
-#include "DDSSubscriber.hpp"
-#include "DDSListener.hpp"
+#include "dds/DDSSubscriber.hpp"
+#include "dds/DDSListener.hpp"
 #include <PointcloudIDL.hpp>
 #include <Slam3DIDL.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>

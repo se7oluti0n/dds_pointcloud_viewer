@@ -1,5 +1,5 @@
 
-#include "DDSSubscriberExample.hpp"
+#include "example/DDSSubscriberExample.hpp"
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);

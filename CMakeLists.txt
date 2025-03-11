@@ -33,8 +33,8 @@ message("include dir: ${CMAKE_BINARY_DIR}")
 
 ### glim_ros ###
 ament_auto_add_executable(publisher_node 
-  src/publisher_node.cpp
-  src/DDSPublisherExample.cpp
+  src/example/publisher_node.cpp
+  src/example/DDSPublisherExample.cpp
 )
 
 # Both executables need to be linked to the idl data type library and
@@ -43,9 +43,9 @@ target_link_libraries(publisher_node PointcloudDataLib CycloneDDS-CXX::ddscxx)
 
 ## client exaple
 ament_auto_add_executable(subscriber_node 
-  src/subscriber_node.cpp
+  src/example/subscriber_node.cpp
   src/callbacks.cpp
-  src/DDSSubscriberExample.cpp
+  src/example/DDSSubscriberExample.cpp
 )
 
 # Both executables need to be linked to the idl data type library and
@@ -55,8 +55,9 @@ target_link_libraries(subscriber_node PointcloudDataLib glim::glim CycloneDDS-CX
 ament_auto_add_executable(viewer_node
   src/viewer_node.cpp
   src/remote_viewer.cpp
+  src/data_writer.cpp
   src/callbacks.cpp
-  src/DDSSubscriberExample.cpp
+  src/example/DDSSubscriberExample.cpp
 )
 
 # Both executables need to be linked to the idl data type library and

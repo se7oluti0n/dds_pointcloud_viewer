@@ -1,4 +1,4 @@
-#include "DDSPublisherExample.hpp"
+#include "example/DDSPublisherExample.hpp"
 
 using namespace org::eclipse::cyclonedds;
 

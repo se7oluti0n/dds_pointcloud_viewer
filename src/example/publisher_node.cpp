@@ -1,4 +1,4 @@
-#include "DDSPublisherExample.hpp"
+#include "example/DDSPublisherExample.hpp"
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
