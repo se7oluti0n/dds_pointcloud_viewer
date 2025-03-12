@@ -1,4 +1,4 @@
-#include "example/DDSSubscriberExample.hpp"
+#include "LidarMapSubscriber.hpp"
 
 #include "callbacks.hpp"
 #include "idl_data_conversion.hpp"
@@ -36,7 +36,7 @@ from_dds_pointcloud(const PointCloudData::PointCloud2 &cloud) {
   return msg;
 }
 
-DDSSubscriberExample::DDSSubscriberExample(rclcpp::Node::SharedPtr node)
+LidarMapSubscriber::LidarMapSubscriber(rclcpp::Node::SharedPtr node)
     : node_(node) {
 
   pointcloud2_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>(
@@ -52,15 +52,15 @@ DDSSubscriberExample::DDSSubscriberExample(rclcpp::Node::SharedPtr node)
   create_client();
   running_ = true;
   receiving_thread_ = std::make_shared<std::thread>(
-      &DDSSubscriberExample::receiving_loop, this);
+      &LidarMapSubscriber::receiving_loop, this);
 }
 
-DDSSubscriberExample::~DDSSubscriberExample() {
+LidarMapSubscriber::~LidarMapSubscriber() {
   running_ = false;
   receiving_thread_->join();
 }
 
-void DDSSubscriberExample::receiving_loop() {
+void LidarMapSubscriber::receiving_loop() {
   while (running_) {
     std::vector<std::function<void()>> tasks;
     {
@@ -75,7 +75,7 @@ void DDSSubscriberExample::receiving_loop() {
   }
 }
 
-void DDSSubscriberExample::invoke(const std::function<void()> &task) {
+void LidarMapSubscriber::invoke(const std::function<void()> &task) {
   if (!running_) {
     return;
   }
@@ -83,7 +83,7 @@ void DDSSubscriberExample::invoke(const std::function<void()> &task) {
   invoke_queue.push_back(task);
 }
 
-void DDSSubscriberExample::create_submap_list_subscriber() {
+void LidarMapSubscriber::create_submap_list_subscriber() {
 
   submap_list_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::SubmapList>>(
       domain_id_, "submap_list", tqos_, pqos_, wqos_,
@@ -103,7 +103,7 @@ void DDSSubscriberExample::create_submap_list_subscriber() {
       });
 }
 
-void DDSSubscriberExample::create_submap_data_subscriber() {
+void LidarMapSubscriber::create_submap_data_subscriber() {
 
   submap_data_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::SubmapData>>(
       domain_id_, "submap_data", tqos_, pqos_, wqos_,
@@ -121,7 +121,7 @@ void DDSSubscriberExample::create_submap_data_subscriber() {
       });
 }
 
-void DDSSubscriberExample::create_keyframe_subscriber() {
+void LidarMapSubscriber::create_keyframe_subscriber() {
 
   keyframe_subscriber_ = std::make_unique<DDSSubscriber<Slam3D::Keyframe>>(
       domain_id_, "keyframe", tqos_, pqos_, wqos_,
@@ -142,7 +142,7 @@ void DDSSubscriberExample::create_keyframe_subscriber() {
       });
 }
 
-void DDSSubscriberExample::create_lidar_pose_subscriber() {
+void LidarMapSubscriber::create_lidar_pose_subscriber() {
 
   lidar_pose_subscriber_ =
       std::make_unique<DDSSubscriber<Common::Pose3DTimestamped>>(
@@ -159,7 +159,7 @@ void DDSSubscriberExample::create_lidar_pose_subscriber() {
           });
 }
 
-void DDSSubscriberExample::create_client() {
+void LidarMapSubscriber::create_client() {
 
   std::cout << "=== [Subscriber] Create reader." << std::endl;
 

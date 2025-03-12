@@ -11,11 +11,11 @@
 #include <thread>
 
 
-class DDSSubscriberExample {
+class LidarMapSubscriber {
 
 public:
-  DDSSubscriberExample(rclcpp::Node::SharedPtr node);
-  ~DDSSubscriberExample();
+  LidarMapSubscriber(rclcpp::Node::SharedPtr node);
+  ~LidarMapSubscriber();
 
   void create_client();
   void create_submap_list_subscriber();
