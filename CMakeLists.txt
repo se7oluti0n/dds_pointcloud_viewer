@@ -55,7 +55,6 @@ target_link_libraries(subscriber_node PointcloudDataLib glim::glim CycloneDDS-CX
 ament_auto_add_executable(viewer_node
   src/viewer_node.cpp
   src/remote_viewer.cpp
-  src/data_writer.cpp
   src/callbacks.cpp
   src/example/DDSSubscriberExample.cpp
 )
@@ -66,6 +65,7 @@ target_link_libraries(viewer_node PointcloudDataLib glim::glim CycloneDDS-CXX::d
 
 ament_auto_add_library(glim_dds_client SHARED
   src/glim_dds_client.cpp
+  src/data_writer.cpp
 )
 
 # Both executables need to be linked to the idl data type library and

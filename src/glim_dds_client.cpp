@@ -1,6 +1,7 @@
 #include "glim_dds_client.hpp"
 #include "idl_data_conversion.hpp"
 #include "pointcloud_converter.hpp"
+#include "data_writer.hpp"
 #include <glim/mapping/callbacks.hpp>
 #include <glim/odometry/callbacks.hpp>
 
@@ -13,6 +14,7 @@ logger_(create_module_logger("dds_client")){
   kill_switch = false;
   request_to_terminate = false;
   trajectory_manager_ = std::make_unique<TrajectoryManager>();
+  data_writer_ = std::make_unique<DataWriter>("/home/murphy/pcl.json");
 
   create_dds_publishers();
   set_callbacks();
@@ -124,6 +126,8 @@ void GlimDDSClient::set_callbacks() {
 
   SubMappingCallbacks::on_new_keyframe.add([this](int id, const EstimationFrame::ConstPtr& keyframe){
     // publish key frame
+    const EstimationFrame::ConstPtr kf = keyframe;
+    data_writer_->write(kf);
 
     invoke([this, keyframe]{
       Slam3D::Keyframe dds_keyframe;

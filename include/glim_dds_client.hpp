@@ -12,6 +12,7 @@
 namespace spdlog {
 class logger;
 }
+class DataWriter;
 namespace glim {
 
 class TrajectoryManager;
@@ -44,6 +45,7 @@ private:
   std::shared_ptr<spdlog::logger> logger_;
 
   std::unique_ptr<TrajectoryManager> trajectory_manager_;
+  std::unique_ptr<DataWriter> data_writer_;
 
 };
 
