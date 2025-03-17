@@ -10,6 +10,9 @@ find_package(Eigen3 REQUIRED)
 find_package(iceoryx_binding_c REQUIRED) 
 #set(glim_DIR "/home/manh/glim_ws/install/glim/share/glim/cmake")
 
+find_package(msgpack-cxx REQUIRED)
+find_package(rclcpp REQUIRED)
+
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
@@ -68,8 +71,10 @@ ament_auto_add_library(glim_dds_client SHARED
   src/data_writer.cpp
 )
 
+ament_target_dependencies(glim_dds_client rclcpp)
+
 # Both executables need to be linked to the idl data type library and
 # the ddsc API library.
-target_link_libraries(glim_dds_client PointcloudDataLib glim::glim CycloneDDS-CXX::ddscxx)
+target_link_libraries(glim_dds_client PointcloudDataLib glim::glim CycloneDDS-CXX::ddscxx msgpack-cxx)
 # ament
 ament_auto_package()
