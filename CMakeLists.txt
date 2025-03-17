@@ -48,7 +48,7 @@ target_link_libraries(publisher_node PointcloudDataLib CycloneDDS-CXX::ddscxx)
 ament_auto_add_executable(subscriber_node 
   src/example/subscriber_node.cpp
   src/callbacks.cpp
-  src/example/DDSSubscriberExample.cpp
+  src/LidarMapSubscriber.cpp
 )
 
 # Both executables need to be linked to the idl data type library and
@@ -59,7 +59,7 @@ ament_auto_add_executable(viewer_node
   src/viewer_node.cpp
   src/remote_viewer.cpp
   src/callbacks.cpp
-  src/example/DDSSubscriberExample.cpp
+  src/LidarMapSubscriber.cpp
 )
 
 # Both executables need to be linked to the idl data type library and
