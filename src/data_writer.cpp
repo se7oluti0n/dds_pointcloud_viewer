@@ -2,11 +2,14 @@
 #include <callbacks.hpp>
 #include "pointcloud_converter.hpp"
 #include "helpers/json_converter.hpp"
+#include "helpers/pointcloud_msgpack.hpp"
 #include "idl_data_conversion.hpp"
+#include <sstream>
+#include <msgpack.hpp>
 
 
 DataWriter::DataWriter(const std::string& file_name) {
-  file_.open(file_name, std::ios::app | std::ios::out);
+  file_.open(file_name, std::ios::out | std::ios::binary);
   if (!file_.is_open()) {
     std::cout << "Cannot open file for writing: " << file_name << "\n";
   }
@@ -45,15 +48,23 @@ void DataWriter::write(const EstimationFrame::ConstPtr& keyframe) {
 
     if (!file_.is_open()) return;
 
-    Slam3D::Keyframe dds_keyframe;
-    dds_keyframe.keyframe_id() = keyframe->id;
-    dds_keyframe.pose() = idl::from_eigen(keyframe->T_world_sensor());
-    dds_keyframe.pointcloud() = *frame_to_pointcloud2("odom", 0.0, *keyframe->frame);
+    PointCloud2MsgPack point_cloud;
+    to_pointcloud2("odom", *keyframe->frame, point_cloud);
 
-    nlohmann::json json_keyframe;
+    msgpack::sbuffer sbuf;
+    msgpack::pack(sbuf, point_cloud);
 
-    to_json(json_keyframe, dds_keyframe);
+    file_.write(sbuf.data(), sbuf.size());
 
-    file_ << json_keyframe << "\n";
+    // Slam3D::Keyframe dds_keyframe;
+    // dds_keyframe.keyframe_id() = keyframe->id;
+    // dds_keyframe.pose() = idl::from_eigen(keyframe->T_world_sensor());
+    // dds_keyframe.pointcloud() = *frame_to_pointcloud2("odom", 0.0, *keyframe->frame);
+
+    // nlohmann::json json_keyframe;
+
+    // to_json(json_keyframe, dds_keyframe);
+
+    // file_ << json_keyframe << "\n";
   });
 }

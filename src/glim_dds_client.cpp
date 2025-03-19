@@ -14,7 +14,7 @@ logger_(create_module_logger("dds_client")){
   kill_switch = false;
   request_to_terminate = false;
   trajectory_manager_ = std::make_unique<TrajectoryManager>();
-  data_writer_ = std::make_unique<DataWriter>("/home/murphy/pcl.json");
+  data_writer_ = std::make_unique<DataWriter>("/home/murphy/pcldata");
 
   create_dds_publishers();
   set_callbacks();
@@ -126,7 +126,7 @@ void GlimDDSClient::set_callbacks() {
 
   SubMappingCallbacks::on_new_keyframe.add([this](int id, const EstimationFrame::ConstPtr& keyframe){
     // publish key frame
-    const EstimationFrame::ConstPtr kf = keyframe;
+    auto kf = keyframe->clone();
     data_writer_->write(kf);
 
     invoke([this, keyframe]{
