@@ -197,9 +197,18 @@ void RemoteViewer::drawable_session_list() {
 // fill imu gui UI here
   auto viewer = guik::LightViewer::instance();
   ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.5));
-  ImGui::Begin("session_list", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+  ImGui::Begin("session_list", nullptr, ImGuiWindowFlags_ChildMenu);
   ImGui::PopStyleColor();
 
+  std::vector<const char *> current_color_modes = {"FLAT", "INTENSITY",
+                                                   "NORMAL"};
+
+  for (auto i = 0; i < current_color_modes.size(); i++) {
+    if (ImGui::Button(current_color_modes[i])) {
+      current_color_mode = i;
+    }
+  }
+  ImGui::End();
 }
 
 void RemoteViewer::drawable_selection() {
@@ -227,11 +236,11 @@ void RemoteViewer::drawable_selection() {
   // ImGui::SameLine();
   // ImGui::Checkbox("points", &show_current_points);
 
-  std::vector<const char *> current_color_modes = {"FLAT", "INTENSITY",
-                                                   "NORMAL"};
-  ImGui::SetNextItemWidth(92);
-  ImGui::Combo("color_mode", &current_color_mode, current_color_modes.data(),
-               current_color_modes.size());
+  // std::vector<const char *> current_color_modes = {"FLAT", "INTENSITY",
+  //                                                  "NORMAL"};
+  // ImGui::SetNextItemWidth(92);
+  // ImGui::Combo("color_mode", &current_color_mode, current_color_modes.data(),
+  //              current_color_modes.size());
 
   // ImGui::SameLine();
   // if (ImGui::Button("Log")) {
