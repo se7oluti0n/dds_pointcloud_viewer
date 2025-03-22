@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dds/DDSSubscriber.hpp"
-#include "dds/DDSListener.hpp"
+#include "ddswrapper/DDSSubscriber.hpp"
+#include "ddswrapper/DDSListener.hpp"
 #include <PointcloudIDL.hpp>
 #include <Slam3DIDL.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -9,7 +9,18 @@
 #include <mutex>
 #include <rclcpp/rclcpp.hpp>
 #include <thread>
+#include <chrono>
 
+
+inline std::string generate_unique_filename() {
+    auto now = std::chrono::system_clock::now();
+    auto time_t_now = std::chrono::system_clock::to_time_t(now);
+    std::tm tm_now = *std::localtime(&time_t_now);
+
+    std::ostringstream oss;
+    oss << std::put_time(&tm_now, "%Y-%m-%d-%H-%M-%S");
+    return oss.str();
+}
 
 class LidarMapSubscriber {
 
@@ -17,7 +28,7 @@ public:
   LidarMapSubscriber(rclcpp::Node::SharedPtr node);
   ~LidarMapSubscriber();
 
-  void create_client();
+  void create_example_pointcloud_subscriber();
   void create_submap_list_subscriber();
   void create_submap_data_subscriber();
   void create_keyframe_subscriber();

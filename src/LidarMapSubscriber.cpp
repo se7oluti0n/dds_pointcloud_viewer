@@ -3,6 +3,7 @@
 #include "callbacks.hpp"
 #include "idl_data_conversion.hpp"
 #include "pointcloud_converter.hpp"
+#include "ddswrapper/DDSSerialization.hpp"
 
 using dds::domain::DomainParticipant;
 
@@ -49,7 +50,7 @@ LidarMapSubscriber::LidarMapSubscriber(rclcpp::Node::SharedPtr node)
   create_submap_list_subscriber();
   create_keyframe_subscriber();
   create_lidar_pose_subscriber();
-  create_client();
+  create_example_pointcloud_subscriber();
   running_ = true;
   receiving_thread_ = std::make_shared<std::thread>(
       &LidarMapSubscriber::receiving_loop, this);
@@ -93,6 +94,7 @@ void LidarMapSubscriber::create_submap_list_subscriber() {
           std::shared_ptr<const Slam3D::SubmapList> msg_ros2;
 
           msg_ros2 = std::const_pointer_cast<const Slam3D::SubmapList>(msg);
+
 
           glim::DDSCallbacks::on_submap_list(
               msg_ros2); // emit raw(gtsam_pointcloud);
@@ -159,7 +161,7 @@ void LidarMapSubscriber::create_lidar_pose_subscriber() {
           });
 }
 
-void LidarMapSubscriber::create_client() {
+void LidarMapSubscriber::create_example_pointcloud_subscriber() {
 
   std::cout << "=== [Subscriber] Create reader." << std::endl;
 
@@ -172,18 +174,23 @@ void LidarMapSubscriber::create_client() {
   // create listener
 
   pointcloud_subscriber_ =
-      std::make_unique<DDSSubscriber<PointCloudData::PointCloud2>>(
-          domain_id_, "ManhTopic", tqos, sqos, dds::sub::qos::DataReaderQos(),
-          [this](const std::shared_ptr<PointCloudData::PointCloud2> &msg) {
-            invoke([this, msg] {
-              sensor_msgs::msg::PointCloud2 msg_ros2;
-              msg_ros2 = from_dds_pointcloud(*msg);
-              pointcloud2_pub_->publish(msg_ros2);
+    std::make_unique<DDSSubscriber<PointCloudData::PointCloud2>>(
+      domain_id_, "ManhTopic", tqos, sqos, dds::sub::qos::DataReaderQos(),
+      [this](const std::shared_ptr<PointCloudData::PointCloud2> &msg) {
+        invoke([this, msg] {
+          sensor_msgs::msg::PointCloud2 msg_ros2;
+          msg_ros2 = from_dds_pointcloud(*msg);
+          
+          auto filename = generate_unique_filename(); 
+          auto path = "/home/manh/Downloads/" + filename + ".mt";
+          WriteSomeMessagesToFile(*msg, path);
 
-              // emit gtsam pointcloud
-              auto gtsam_pointcloud = glim::extract_raw_points(*msg);
-              glim::DDSCallbacks::on_raw_pointcloud(
-                  gtsam_pointcloud); // emit raw(gtsam_pointcloud);
-            });
-          });
+          pointcloud2_pub_->publish(msg_ros2);
+
+          // emit gtsam pointcloud
+          auto gtsam_pointcloud = glim::extract_raw_points(*msg);
+          glim::DDSCallbacks::on_raw_pointcloud(
+            gtsam_pointcloud); // emit raw(gtsam_pointcloud);
+        });
+      });
 }

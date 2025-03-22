@@ -1,7 +1,7 @@
 #pragma once
 
 // local include
-#include "dds/DDSPublisher.hpp"
+#include "ddswrapper/DDSPublisher.hpp"
 #include "Slam3DIDL.hpp"
 
 #include <mutex>

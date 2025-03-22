@@ -103,6 +103,9 @@ void GlimDDSClient::set_callbacks() {
       dds_submap_data.pointcloud() = *frame_to_pointcloud2("odom", 0.0, *submap->frame);
       submap_data_publisher_->get_writer()->write(dds_submap_data);
       logger_->info("[dds client] Publish submap data: {}", submap->id);
+
+      // serialize dds message Slam3D::SubmapData into binary file
+       
       
     });
 
